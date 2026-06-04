@@ -147,14 +147,6 @@
             background: #7c3aed;
         }
 
-        body.tema-escuro .numero-col {
-            cursor: pointer;
-        }
-        
-        body.tema-escuro .numero-col:hover {
-            background-color: #334155;
-        }
-
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -675,12 +667,6 @@
             font-weight: 600;
             width: 70px;
             background-color: #f8fafc;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .numero-col:hover {
-            background-color: #e2e8f0;
         }
         
         .numero-atual {
@@ -690,10 +676,6 @@
         
         body.tema-escuro .numero-col {
             background-color: #0f172a;
-        }
-        
-        body.tema-escuro .numero-col:hover {
-            background-color: #334155;
         }
         
         .add-cliente-btn {
@@ -842,7 +824,6 @@
             <span>🟠 <span style="background:#f59e0b; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar para linha abaixo</span>
             <span>💰 <span style="background:#22c55e; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Pagar tudo da linha</span>
             <span>🔢 <span style="background:#8b5cf6; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Reordenar posição</span>
-            <span>🔢 <span style="background:#f8fafc; width:16px;height:16px;display:inline-block;border-radius:4px;border:1px solid #cbd5e1;"></span> Duplo clique no número</span>
             <span>💡 Vazio = PAGO | 🔔 Alerta (3º mês+ débito)</span>
         </div>
     </div>
@@ -1095,41 +1076,6 @@
                 salvarAutomatico();
                 renderizarTudo();
                 alert(`"${cliente.nome}" movido para posição ${novaPos}!`);
-            } else {
-                alert(`"${cliente.nome}" já está na posição ${novaPos}!`);
-            }
-        }
-    }
-    
-    function reordenarPorDuploClique(event, clienteId) {
-        event.stopPropagation();
-        const cliente = clientes.find(c => c.id == clienteId);
-        if (!cliente) return;
-        const posicaoAtual = clientes.findIndex(c => c.id == clienteId) + 1;
-        const novaPosicao = prompt(`🔢 Mover Cliente: "${cliente.nome}"\n┌─────────────────────────┐\n│ Posição atual: ${posicaoAtual}       │\n│ Total de clientes: ${clientes.length}  │\n└─────────────────────────┘\n\nDigite a nova posição desejada:`, posicaoAtual);
-        
-        if (novaPosicao !== null) {
-            let novaPos = parseInt(novaPosicao);
-            if (isNaN(novaPos)) {
-                alert("❌ Por favor, digite um número válido!");
-                return;
-            }
-            if (novaPos < 1 || novaPos > clientes.length) {
-                alert(`❌ Posição inválida! Digite um número entre 1 e ${clientes.length}.`);
-                return;
-            }
-            
-            const indexAtual = clientes.findIndex(c => c.id == clienteId);
-            const indexDestino = novaPos - 1;
-            
-            if (indexAtual !== indexDestino) {
-                const [movido] = clientes.splice(indexAtual, 1);
-                clientes.splice(indexDestino, 0, movido);
-                salvarAutomatico();
-                renderizarTudo();
-                alert(`✅ "${cliente.nome}" movido para posição ${novaPos}!`);
-            } else {
-                alert(`ℹ️ "${cliente.nome}" já está na posição ${novaPos}!`);
             }
         }
     }
@@ -1338,11 +1284,11 @@
                             <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Cliente</th>
                             ${meses.map(m => `<th style="border: 1px solid #cbd5e1; padding: 8px;">${m}</th>`).join('')}
                             <th style="border: 1px solid #cbd5e1; padding: 8px;">Total Devendo</th>
-                        </table>
+                        </tr>
                     </thead>
                     <tbody>
                         ${clientesFiltrados.map((cliente, idx) => {
-                            let row = `<td>
+                            let row = `<tr>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${inicio + idx}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>${cliente.nome}</strong></td>`;
                             for (let i = 0; i < meses.length; i++) {
@@ -1635,8 +1581,8 @@
     function renderHeader() {
         const thead = document.getElementById('tableHeader');
         if (!thead) return;
-        let html = '<table>';
-        html += '<th style="width: 70px;">🔢 N° (duplo clique)</th>';
+        let html = '<tr>';
+        html += '<th style="width: 70px;">N° (Clique p/ ordenar)</th>';
         html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
             html += `<th>📆 ${meses[i]}</th>`;
@@ -1652,7 +1598,7 @@
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
         if (clientes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨✨</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td>' + '</tr>';
             return;
         }
         
@@ -1664,7 +1610,7 @@
             const estiloOculto = (termoBusca !== '' && !nomeLower.includes(termoBusca)) ? 'linha-oculta' : '';
             
             html += `<tr data-cliente-id="${cliente.id}" draggable="true" class="${estiloOculto}">`;
-            html += `<td class="numero-col" data-cliente-id="${cliente.id}" data-posicao-atual="${idx + 1}" title="Clique duplo para reordenar">🔢 ${idx + 1}</td>`;
+            html += `<td class="numero-col"><span class="numero-atual">${idx + 1}</span></td>`;
             
             html += `<td class="cliente-nome">`;
             if (editMode) {
@@ -1703,7 +1649,7 @@
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
                         <button class="btn-reordenar" data-cliente-id="${cliente.id}" title="Reordenar para posição específica">🔢</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
-                       </td>`;
+                        </td>`;
             html += `<td style="text-align:center;"><span class="drag-handle" title="Arraste para reorganizar">⋮⋮</span></td>`;
             html += `</tr>`;
         }
@@ -1733,11 +1679,6 @@
         document.querySelectorAll('.btn-reordenar').forEach(btn => {
             btn.removeEventListener('click', reordenarHandler);
             btn.addEventListener('click', reordenarHandler);
-        });
-        
-        document.querySelectorAll('.numero-col').forEach(td => {
-            td.removeEventListener('dblclick', duploCliqueNumeroHandler);
-            td.addEventListener('dblclick', duploCliqueNumeroHandler);
         });
         
         document.querySelectorAll('.circulo-verde').forEach(btn => {
@@ -1810,14 +1751,6 @@
     function reordenarHandler(e) {
         const btn = e.currentTarget;
         const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
-        if (clienteId) {
-            reordenarCliente(clienteId);
-        }
-    }
-    
-    function duploCliqueNumeroHandler(e) {
-        const td = e.currentTarget;
-        const clienteId = parseInt(td.getAttribute('data-cliente-id'));
         if (clienteId) {
             reordenarCliente(clienteId);
         }
