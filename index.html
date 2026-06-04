@@ -368,7 +368,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            min-width: 650px;
+            min-width: 700px;
         }
 
         .clientes-table th {
@@ -418,8 +418,15 @@
             box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
         }
 
+        .valor-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+        }
+
         .valor-input {
-            width: 110px;
+            width: 100px;
             padding: 8px 10px;
             border-radius: 24px;
             border: 1px solid #cbd5e1;
@@ -437,6 +444,61 @@
         .valor-input:focus {
             border-color: #2563eb;
             outline: none;
+        }
+
+        .circulo-verde, .circulo-laranja {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: transform 0.1s;
+            border: none;
+        }
+        
+        .circulo-verde {
+            background: #10b981;
+            color: white;
+        }
+        
+        .circulo-verde:hover {
+            transform: scale(1.1);
+            background: #059669;
+        }
+        
+        .circulo-laranja {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .circulo-laranja:hover {
+            transform: scale(1.1);
+            background: #d97706;
+        }
+        
+        .btn-pagar-linha {
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.8rem;
+            margin: 0 4px;
+        }
+        
+        .btn-pagar-linha:hover {
+            background: #16a34a;
+            transform: scale(1.05);
         }
 
         .soma-linha {
@@ -672,10 +734,11 @@
             .clientes-table th, .clientes-table td {
                 padding: 8px 4px;
             }
-            .valor-input { width: 85px; }
+            .valor-input { width: 70px; }
             .footer-fixo { font-size: 0.75rem; }
             .numero-col { width: 40px; }
             .buscador-input { width: 150px; }
+            .circulo-verde, .circulo-laranja { width: 20px; height: 20px; font-size: 0.6rem; }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -722,11 +785,10 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 10px;">
         <button class="add-cliente-btn" id="btnAddCliente">➕ Adicionar Cliente</button>
         <div class="legenda">
-            <span>🔔 <span class="badge-alerta"></span> Alerta apenas em meses com DÉBITO (3º mês+)</span>
-            <span>💡 Vazio = PAGO</span>
-            <span>💰 Valor = DEVENDO</span>
-            <span>↹ TAB navega | ↵ ENTER salva</span>
-            <span>⋮⋮ Arraste para reorganizar</span>
+            <span>🟢 <span style="background:#10b981; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar valor (horizontal)</span>
+            <span>🟠 <span style="background:#f59e0b; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar para linha abaixo</span>
+            <span>💰 <span style="background:#22c55e; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Pagar tudo da linha</span>
+            <span>💡 Vazio = PAGO | 🔔 Alerta (3º mês+ débito)</span>
         </div>
     </div>
 
@@ -982,6 +1044,42 @@
         }
     }
     
+    function copiarValorHorizontal(clienteId, mesIndex) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (!cliente) return;
+        const valorAtual = cliente.valores[mesIndex];
+        if (valorAtual !== null && valorAtual > 0 && mesIndex + 1 < meses.length) {
+            setValorClienteMes(clienteId, mesIndex + 1, valorAtual.toString(), false);
+            renderizarTudo();
+        }
+    }
+    
+    function copiarValorVertical(clienteId, mesIndex) {
+        const clienteAtual = clientes.find(c => c.id == clienteId);
+        if (!clienteAtual) return;
+        const clienteIndex = clientes.findIndex(c => c.id == clienteId);
+        if (clienteIndex + 1 < clientes.length) {
+            const valorAtual = clienteAtual.valores[mesIndex];
+            if (valorAtual !== null && valorAtual > 0) {
+                const clienteProximo = clientes[clienteIndex + 1];
+                setValorClienteMes(clienteProximo.id, mesIndex, valorAtual.toString(), false);
+                renderizarTudo();
+            }
+        }
+    }
+    
+    function pagarTodosDebitosLinha(clienteId) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (!cliente) return;
+        if (confirm(`Marcar todos os débitos de "${cliente.nome}" como PAGOS?`)) {
+            for (let i = 0; i < meses.length; i++) {
+                cliente.valores[i] = null;
+            }
+            salvarAutomatico();
+            renderizarTudo();
+        }
+    }
+    
     function exportarCSV() {
         if (meses.length === 0) {
             alert('Não há meses para exportar');
@@ -1124,12 +1222,13 @@
                     </thead>
                     <tbody>
                         ${clientesFiltrados.map((cliente, idx) => {
-                            let row = `<td>
+                            let row = `<tr>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${inicio + idx}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>${cliente.nome}</strong></td>`;
                             for (let i = 0; i < meses.length; i++) {
                                 let valor = cliente.valores[i];
-                                let displayValor = (valor !== null && valor > 0) ? formatMoney(valor) : '✓ Pago';
+                                // Pagos ficam em branco no PDF
+                                let displayValor = (valor !== null && valor > 0) ? formatMoney(valor) : '';
                                 row += `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${displayValor}</td>`;
                             }
                             row += `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: #fef9e3;"><strong>${formatMoney(calcularSomaCliente(cliente))}</strong></td>`;
@@ -1462,17 +1561,26 @@
                 const temAlerta = deveTerAlerta(i, valorAtual);
                 const alertaClasseTd = temAlerta ? 'alerta-mes' : '';
                 html += `<td class="${alertaClasseTd}" style="text-align:center;">`;
+                html += `<div class="valor-container">`;
                 if (editMode) {
                     html += `<input type="text" class="valor-input" data-cliente-id="${cliente.id}" data-mes-index="${i}" value="${escapeHtml(valorExibido)}" placeholder="0,00">`;
                 } else {
                     const displayValor = valorExibido ? `R$ ${valorExibido}` : '✓ Pago';
                     html += `<div style="padding:8px; text-align:center; font-weight:500;">${displayValor}</div>`;
                 }
+                if (editMode && valorAtual !== null && valorAtual > 0) {
+                    html += `<button class="circulo-verde" data-cliente-id="${cliente.id}" data-mes-index="${i}" title="Copiar para próximo mês (horizontal)">➡</button>`;
+                    if (idx + 1 < clientes.length) {
+                        html += `<button class="circulo-laranja" data-cliente-id="${cliente.id}" data-mes-index="${i}" title="Copiar para cliente abaixo (vertical)">⬇</button>`;
+                    }
+                }
+                html += `</div>`;
                 html += `</td>`;
             }
             
             html += `<td style="text-align:center; background:#fef9e3;"><span class="soma-linha" id="soma-cliente-${cliente.id}">${formatMoney(somaCliente)}</span></td>`;
             html += `<td class="acoes-col">
+                        <button class="btn-pagar-linha" data-cliente-id="${cliente.id}" title="Pagar todos os débitos da linha">💰</button>
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
                        </td>`;
@@ -1495,6 +1603,21 @@
         document.querySelectorAll('.remove-cliente').forEach(btn => {
             btn.removeEventListener('click', removeClienteHandler);
             btn.addEventListener('click', removeClienteHandler);
+        });
+        
+        document.querySelectorAll('.btn-pagar-linha').forEach(btn => {
+            btn.removeEventListener('click', pagarLinhaHandler);
+            btn.addEventListener('click', pagarLinhaHandler);
+        });
+        
+        document.querySelectorAll('.circulo-verde').forEach(btn => {
+            btn.removeEventListener('click', copiarHorizontalHandler);
+            btn.addEventListener('click', copiarHorizontalHandler);
+        });
+        
+        document.querySelectorAll('.circulo-laranja').forEach(btn => {
+            btn.removeEventListener('click', copiarVerticalHandler);
+            btn.addEventListener('click', copiarVerticalHandler);
         });
         
         setupDragAndDrop();
@@ -1551,6 +1674,34 @@
         const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
         if (clienteId) {
             editarCliente(clienteId);
+        }
+    }
+    
+    function pagarLinhaHandler(e) {
+        const btn = e.currentTarget;
+        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
+        if (clienteId) {
+            pagarTodosDebitosLinha(clienteId);
+        }
+    }
+    
+    function copiarHorizontalHandler(e) {
+        e.stopPropagation();
+        const btn = e.currentTarget;
+        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
+        const mesIndex = parseInt(btn.getAttribute('data-mes-index'));
+        if (!isNaN(clienteId) && !isNaN(mesIndex)) {
+            copiarValorHorizontal(clienteId, mesIndex);
+        }
+    }
+    
+    function copiarVerticalHandler(e) {
+        e.stopPropagation();
+        const btn = e.currentTarget;
+        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
+        const mesIndex = parseInt(btn.getAttribute('data-mes-index'));
+        if (!isNaN(clienteId) && !isNaN(mesIndex)) {
+            copiarValorVertical(clienteId, mesIndex);
         }
     }
     
