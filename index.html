@@ -115,6 +115,15 @@
             color: #e2e8f0;
         }
 
+        body.tema-escuro .btn-editar {
+            background: #3b82f6;
+            color: white;
+        }
+
+        body.tema-escuro .btn-editar:hover {
+            background: #2563eb;
+        }
+
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -445,11 +454,34 @@
             align-items: center;
             justify-content: center;
             transition: 0.1s;
+            margin: 0 4px;
         }
         .remove-cliente:hover {
             background: #fecaca;
             transform: scale(1.05);
         }
+        
+        .btn-editar {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.8rem;
+            margin: 0 4px;
+        }
+        
+        .btn-editar:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+        
         .add-cliente-btn {
             background: #10b981;
             border: none;
@@ -466,6 +498,7 @@
         }
         .acoes-col {
             text-align: center;
+            white-space: nowrap;
         }
         
         .footer-fixo {
@@ -542,7 +575,7 @@
             <span>🔔 <span class="badge-alerta"></span> 3º mês ou mais: cor de alerta (destaque)</span>
             <span>💡 Campo vazio = considerado PAGO</span>
             <span>💰 Campo com valor = DEVENDO</span>
-            <span>↹ Tecla TAB navega entre campos</span>
+            <span>↹ TAB navega | ↵ ENTER salva</span>
         </div>
     </div>
 
@@ -695,7 +728,7 @@
         if (spanElement) spanElement.innerText = formatMoney(soma);
     }
     
-    function setValorClienteMes(clienteId, mesIndex, rawValue) {
+    function setValorClienteMes(clienteId, mesIndex, rawValue, salvarERenderizar = true) {
         const cliente = clientes.find(c => c.id == clienteId);
         if (!cliente) return;
         let numericValue = parseValorInput(rawValue);
@@ -709,15 +742,19 @@
         atualizarSomaLinhaUI(clienteId);
         atualizarTotalGeralUI();
         salvarAutomatico();
-        renderizarTudo();
+        if (salvarERenderizar) {
+            renderizarTudo();
+        }
     }
     
-    function setNomeCliente(clienteId, novoNome) {
+    function setNomeCliente(clienteId, novoNome, salvarERenderizar = true) {
         const cliente = clientes.find(c => c.id == clienteId);
         if (cliente && novoNome !== undefined) {
             cliente.nome = novoNome.trim() === "" ? "Cliente" : novoNome;
             salvarAutomatico();
-            renderizarTudo();
+            if (salvarERenderizar) {
+                renderizarTudo();
+            }
         }
     }
     
@@ -737,9 +774,25 @@
     }
     
     function removerCliente(clienteId) {
-        clientes = clientes.filter(c => c.id != clienteId);
-        salvarAutomatico();
-        renderizarTudo();
+        if (confirm("Remover este cliente e todos os débitos?")) {
+            clientes = clientes.filter(c => c.id != clienteId);
+            salvarAutomatico();
+            renderizarTudo();
+        }
+    }
+    
+    function editarCliente(clienteId) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (cliente) {
+            const novoNome = prompt("Editar nome do cliente:", cliente.nome);
+            if (novoNome !== null && novoNome.trim() !== "") {
+                setNomeCliente(clienteId, novoNome, false);
+                renderizarTudo();
+            } else if (novoNome !== null && novoNome.trim() === "") {
+                setNomeCliente(clienteId, "Cliente", false);
+                renderizarTudo();
+            }
+        }
     }
     
     function adicionarMesNaSequencia() {
@@ -974,7 +1027,7 @@
                                         <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(calcularSomaCliente(cliente))}</strong></td>
                                     </tr>
                                 </tfoot>
-                            </table>
+                            <table>
                         ` : '<p style="color: green;">✅ Este cliente não possui débitos pendentes!</p>'}
                     </div>
                     <hr/>
@@ -997,6 +1050,38 @@
         });
         
         alert(`Gerando PDFs para ${clientes.length} cliente(s). Os arquivos serão baixados em sequência.`);
+    }
+    
+    function setupEnterNavigation() {
+        const inputs = document.querySelectorAll('.nome-input, .valor-input');
+        
+        inputs.forEach((input) => {
+            input.removeEventListener('keypress', enterHandler);
+            input.addEventListener('keypress', enterHandler);
+        });
+    }
+    
+    function enterHandler(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const input = e.target;
+            input.blur();
+            
+            if (input.classList.contains('nome-input')) {
+                const clienteId = parseInt(input.getAttribute('data-cliente-id'));
+                if (clienteId) {
+                    setNomeCliente(clienteId, input.value, false);
+                    renderizarTudo();
+                }
+            } else if (input.classList.contains('valor-input')) {
+                const clienteId = parseInt(input.getAttribute('data-cliente-id'));
+                const mesIndex = parseInt(input.getAttribute('data-mes-index'));
+                if (!isNaN(clienteId) && !isNaN(mesIndex)) {
+                    setValorClienteMes(clienteId, mesIndex, input.value, false);
+                    renderizarTudo();
+                }
+            }
+        }
     }
     
     function setupTabNavigation() {
@@ -1052,7 +1137,7 @@
             html += `<th${alertaClasse}>📆 ${meses[i]}</th>`;
         }
         html += '<th>💵 Soma da linha (devendo)</th>';
-        html += '<th>🗑️ Ações</th>';
+        html += '<th>⚙️ Ações</th>';
         html += '</tr>';
         thead.innerHTML = html;
     }
@@ -1094,15 +1179,29 @@
             }
             
             html += `<td style="text-align:center; background:#fef9e3;"><span class="soma-linha" id="soma-cliente-${cliente.id}">${formatMoney(somaCliente)}</span></td>`;
-            html += `<td class="acoes-col"><button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button></td>`;
-            html += '</table>';
+            html += `<td class="acoes-col">
+                        <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
+                        <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
+                     </td>`;
+            html += '</tr>';
         }
         tbody.innerHTML = html;
         
         if (editMode) {
             attachEventListeners();
             setupTabNavigation();
+            setupEnterNavigation();
         }
+        
+        document.querySelectorAll('.btn-editar').forEach(btn => {
+            btn.removeEventListener('click', editarHandler);
+            btn.addEventListener('click', editarHandler);
+        });
+        
+        document.querySelectorAll('.remove-cliente').forEach(btn => {
+            btn.removeEventListener('click', removeClienteHandler);
+            btn.addEventListener('click', removeClienteHandler);
+        });
     }
     
     function attachEventListeners() {
@@ -1113,10 +1212,6 @@
         document.querySelectorAll('.valor-input').forEach(input => {
             input.removeEventListener('blur', valorChangeHandler);
             input.addEventListener('blur', valorChangeHandler);
-        });
-        document.querySelectorAll('.remove-cliente').forEach(btn => {
-            btn.removeEventListener('click', removeClienteHandler);
-            btn.addEventListener('click', removeClienteHandler);
         });
     }
     
@@ -1138,8 +1233,16 @@
     function removeClienteHandler(e) {
         const btn = e.currentTarget;
         const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
-        if (clienteId && confirm("Remover este cliente e todos os débitos?")) {
+        if (clienteId) {
             removerCliente(clienteId);
+        }
+    }
+    
+    function editarHandler(e) {
+        const btn = e.currentTarget;
+        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
+        if (clienteId) {
+            editarCliente(clienteId);
         }
     }
     
