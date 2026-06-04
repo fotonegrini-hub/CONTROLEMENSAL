@@ -127,6 +127,17 @@
             color: #94a3b8;
         }
 
+        body.tema-escuro .buscador-container {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        body.tema-escuro .buscador-input {
+            background: #334155;
+            color: white;
+            border-color: #475569;
+        }
+
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -215,6 +226,67 @@
 
         .btn-pdf {
             background: #ef4444;
+        }
+
+        .buscador-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8fafc;
+            padding: 8px 20px;
+            border-radius: 60px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .buscador-container span {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .buscador-input {
+            border: 1px solid #cbd5e1;
+            border-radius: 40px;
+            padding: 8px 16px;
+            width: 250px;
+            font-size: 0.85rem;
+            background: white;
+            transition: 0.1s;
+        }
+
+        .buscador-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+
+        .buscador-limpar {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+
+        .buscador-limpar:hover {
+            background: #dc2626;
+            transform: scale(0.97);
+        }
+
+        .resultado-info {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-left: auto;
+        }
+
+        body.tema-escuro .resultado-info {
+            color: #94a3b8;
         }
 
         .meses-toolbar {
@@ -378,7 +450,6 @@
             color: #0c4a6e;
         }
 
-        /* ALERTA: só aparece quando o mês TEM VALOR DEVENDO E é >= 3º mês (índice >= 2) */
         .alerta-mes {
             background-color: #fff3cd !important;
             position: relative;
@@ -593,6 +664,10 @@
             background: #e2e8f0;
         }
         
+        .linha-oculta {
+            display: none !important;
+        }
+        
         @media (max-width: 700px) {
             .clientes-table th, .clientes-table td {
                 padding: 8px 4px;
@@ -600,6 +675,7 @@
             .valor-input { width: 85px; }
             .footer-fixo { font-size: 0.75rem; }
             .numero-col { width: 40px; }
+            .buscador-input { width: 150px; }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -612,6 +688,12 @@
     </div>
     
     <div class="top-actions">
+        <div class="buscador-container">
+            <span>🔍 Buscar:</span>
+            <input type="text" id="buscadorInput" class="buscador-input" placeholder="Digite o nome do cliente..." autocomplete="off">
+            <button id="buscadorLimpar" class="buscador-limpar">✖ Limpar</button>
+            <span id="resultadoInfo" class="resultado-info"></span>
+        </div>
         <button class="btn-csv" id="btnExportarCSV">📥 Exportar CSV</button>
         <button class="btn-csv import" id="btnImportarCSV">📤 Importar CSV</button>
         <div class="pdf-range-selector">
@@ -665,6 +747,7 @@
     let editMode = true;
     let temaAtual = 'claro';
     let dragSourceRow = null;
+    let termoBusca = '';
     
     function toggleTema() {
         const body = document.body;
@@ -798,7 +881,6 @@
         if (spanElement) spanElement.innerText = formatMoney(soma);
     }
     
-    // Função para verificar se um mês específico deve ter alerta (índice >= 2 E tem valor > 0)
     function deveTerAlerta(mesIndex, valor) {
         return (mesIndex >= 2 && valor !== null && !isNaN(valor) && valor > 0);
     }
@@ -1042,7 +1124,7 @@
                     </thead>
                     <tbody>
                         ${clientesFiltrados.map((cliente, idx) => {
-                            let row = `<tr>
+                            let row = `<td>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${inicio + idx}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>${cliente.nome}</strong></td>`;
                             for (let i = 0; i < meses.length; i++) {
@@ -1153,8 +1235,49 @@
         alert(`Gerando PDFs para ${clientes.length} cliente(s). Os arquivos serão baixados em sequência.`);
     }
     
-    function setupDragAndDrop() {
+    function aplicarFiltroBusca() {
+        const input = document.getElementById('buscadorInput');
+        termoBusca = input.value.toLowerCase().trim();
+        const resultadoInfo = document.getElementById('resultadoInfo');
         const rows = document.querySelectorAll('#tableBody tr');
+        
+        let visiveis = 0;
+        rows.forEach(row => {
+            const nomeCell = row.querySelector('.cliente-nome');
+            if (nomeCell) {
+                let nomeCliente = '';
+                const nomeInput = nomeCell.querySelector('.nome-input');
+                const nomeDisplay = nomeCell.querySelector('.nome-display');
+                if (nomeInput) {
+                    nomeCliente = nomeInput.value.toLowerCase();
+                } else if (nomeDisplay) {
+                    nomeCliente = nomeDisplay.textContent.toLowerCase();
+                }
+                
+                if (termoBusca === '' || nomeCliente.includes(termoBusca)) {
+                    row.classList.remove('linha-oculta');
+                    visiveis++;
+                } else {
+                    row.classList.add('linha-oculta');
+                }
+            }
+        });
+        
+        if (termoBusca === '') {
+            resultadoInfo.textContent = `Total: ${clientes.length} clientes`;
+        } else {
+            resultadoInfo.textContent = `Encontrados: ${visiveis} de ${clientes.length}`;
+        }
+    }
+    
+    function limparBusca() {
+        document.getElementById('buscadorInput').value = '';
+        termoBusca = '';
+        aplicarFiltroBusca();
+    }
+    
+    function setupDragAndDrop() {
+        const rows = document.querySelectorAll('#tableBody tr:not(.linha-oculta)');
         rows.forEach(row => {
             row.setAttribute('draggable', 'true');
             row.removeEventListener('dragstart', dragStart);
@@ -1170,6 +1293,10 @@
     }
     
     function dragStart(e) {
+        if (this.classList.contains('linha-oculta')) {
+            e.preventDefault();
+            return false;
+        }
         dragSourceRow = this;
         e.dataTransfer.effectAllowed = 'move';
         this.classList.add('dragging');
@@ -1189,15 +1316,27 @@
         e.preventDefault();
         const targetRow = this;
         
-        if (dragSourceRow && dragSourceRow !== targetRow) {
-            const sourceIndex = Array.from(dragSourceRow.parentNode.children).indexOf(dragSourceRow);
-            const targetIndex = Array.from(targetRow.parentNode.children).indexOf(targetRow);
+        if (dragSourceRow && dragSourceRow !== targetRow && !targetRow.classList.contains('linha-oculta') && !dragSourceRow.classList.contains('linha-oculta')) {
+            const sourceIndex = Array.from(dragSourceRow.parentNode.children).filter(r => !r.classList.contains('linha-oculta')).indexOf(dragSourceRow);
+            const targetIndex = Array.from(targetRow.parentNode.children).filter(r => !r.classList.contains('linha-oculta')).indexOf(targetRow);
             
             if (sourceIndex !== -1 && targetIndex !== -1) {
-                const [movedClient] = clientes.splice(sourceIndex, 1);
-                clientes.splice(targetIndex, 0, movedClient);
-                salvarAutomatico();
-                renderizarTudo();
+                const clientesVisiveis = clientes.filter((_, idx) => {
+                    const nomeCliente = clientes[idx].nome.toLowerCase();
+                    return termoBusca === '' || nomeCliente.includes(termoBusca);
+                });
+                
+                const clienteMovido = clientesVisiveis[sourceIndex];
+                const clienteOriginalIndex = clientes.findIndex(c => c.id === clienteMovido.id);
+                const clienteTarget = clientesVisiveis[targetIndex];
+                const clienteTargetOriginalIndex = clientes.findIndex(c => c.id === clienteTarget.id);
+                
+                if (clienteOriginalIndex !== -1 && clienteTargetOriginalIndex !== -1) {
+                    const [moved] = clientes.splice(clienteOriginalIndex, 1);
+                    clientes.splice(clienteTargetOriginalIndex, 0, moved);
+                    salvarAutomatico();
+                    renderizarTudo();
+                }
             }
         }
     }
@@ -1295,7 +1434,7 @@
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
         if (clientes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td><tr>';
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td></tr>';
             return;
         }
         
@@ -1303,7 +1442,10 @@
         for (let idx = 0; idx < clientes.length; idx++) {
             const cliente = clientes[idx];
             const somaCliente = calcularSomaCliente(cliente);
-            html += `<tr data-cliente-id="${cliente.id}" draggable="true">`;
+            const nomeLower = cliente.nome.toLowerCase();
+            const estiloOculto = (termoBusca !== '' && !nomeLower.includes(termoBusca)) ? 'linha-oculta' : '';
+            
+            html += `<tr data-cliente-id="${cliente.id}" draggable="true" class="${estiloOculto}">`;
             html += `<td class="numero-col">${idx + 1}</td>`;
             
             html += `<td class="cliente-nome">`;
@@ -1317,7 +1459,6 @@
             for (let i = 0; i < meses.length; i++) {
                 let valorAtual = cliente.valores[i];
                 let valorExibido = (valorAtual !== null && !isNaN(valorAtual)) ? valorAtual.toFixed(2).replace('.', ',') : '';
-                // Só aplica alerta se: índice >= 2 E tem valor devendo (>0)
                 const temAlerta = deveTerAlerta(i, valorAtual);
                 const alertaClasseTd = temAlerta ? 'alerta-mes' : '';
                 html += `<td class="${alertaClasseTd}" style="text-align:center;">`;
@@ -1367,6 +1508,8 @@
             if (!inicioInput.value) inicioInput.value = 1;
             if (!fimInput.value) fimInput.value = maxNumero;
         }
+        
+        aplicarFiltroBusca();
     }
     
     function attachEventListeners() {
@@ -1466,6 +1609,13 @@
             cliente3.valores[2] = 199.99;
             cliente3.valores[3] = null;
             clientes.push(cliente3);
+            
+            let cliente4 = { id: nextClienteId++, nome: 'Carlos Eduardo', valores: {} };
+            cliente4.valores[0] = 450.00;
+            cliente4.valores[1] = 450.00;
+            cliente4.valores[2] = 450.00;
+            cliente4.valores[3] = null;
+            clientes.push(cliente4);
         }
         
         renderizarTudo();
@@ -1488,6 +1638,15 @@
         document.getElementById('btnToggleTheme')?.addEventListener('click', () => toggleTema());
         document.getElementById('btnPDFGeral')?.addEventListener('click', () => gerarPDFGeralComIntervalo());
         document.getElementById('btnPDFIndividual')?.addEventListener('click', () => gerarPDFIndividual());
+        
+        const buscadorInput = document.getElementById('buscadorInput');
+        const buscadorLimpar = document.getElementById('buscadorLimpar');
+        if (buscadorInput) {
+            buscadorInput.addEventListener('input', () => aplicarFiltroBusca());
+        }
+        if (buscadorLimpar) {
+            buscadorLimpar.addEventListener('click', () => limparBusca());
+        }
     }
     
     init();
