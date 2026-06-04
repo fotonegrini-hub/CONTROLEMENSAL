@@ -138,15 +138,6 @@
             border-color: #475569;
         }
 
-        body.tema-escuro .btn-reordenar {
-            background: #8b5cf6;
-            color: white;
-        }
-
-        body.tema-escuro .btn-reordenar:hover {
-            background: #7c3aed;
-        }
-
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -629,27 +620,6 @@
             transform: scale(1.05);
         }
         
-        .btn-reordenar {
-            background: #8b5cf6;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            width: 28px;
-            height: 28px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.1s;
-            font-size: 0.8rem;
-            margin: 0 4px;
-        }
-        
-        .btn-reordenar:hover {
-            background: #7c3aed;
-            transform: scale(1.05);
-        }
-        
         .drag-handle {
             cursor: grab;
             font-size: 1.2rem;
@@ -667,6 +637,15 @@
             font-weight: 600;
             width: 70px;
             background-color: #f8fafc;
+            cursor: pointer;
+        }
+        
+        .numero-col:hover {
+            background-color: #e2e8f0;
+        }
+        
+        body.tema-escuro .numero-col:hover {
+            background-color: #334155;
         }
         
         .numero-atual {
@@ -823,7 +802,7 @@
             <span>🟢 <span style="background:#10b981; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar valor (horizontal)</span>
             <span>🟠 <span style="background:#f59e0b; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar para linha abaixo</span>
             <span>💰 <span style="background:#22c55e; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Pagar tudo da linha</span>
-            <span>🔢 <span style="background:#8b5cf6; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Reordenar posição</span>
+            <span>🔢 Duplo clique no N° p/ reordenar</span>
             <span>💡 Vazio = PAGO | 🔔 Alerta (3º mês+ débito)</span>
         </div>
     </div>
@@ -1270,20 +1249,22 @@
             return;
         }
         
+        const totalGeralValor = clientesFiltrados.reduce((sum, c) => sum + calcularSomaCliente(c), 0);
+        
         const element = document.createElement('div');
         element.innerHTML = `
-            <div style="padding: 20px; font-family: Arial, sans-serif;">
-                <h1 style="text-align: center; color: #1e293b;">DN Controle Débito - Relatório Geral</h1>
-                <p style="text-align: center; color: #64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
-                <p style="text-align: center; color: #64748b;">Clientes selecionados: ${inicio} à ${fim} (Total: ${clientesFiltrados.length})</p>
-                <hr/>
+            <div style="padding: 20px; font-family: Arial, sans-serif; width: 100%;">
+                <h1 style="text-align: center; color: #1e293b; margin: 0 0 10px 0;">DN Controle Débito - Relatório Geral</h1>
+                <p style="text-align: center; color: #64748b; margin: 0 0 5px 0;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                <p style="text-align: center; color: #64748b; margin: 0 0 20px 0;">Clientes selecionados: ${inicio} à ${fim} (Total: ${clientesFiltrados.length})</p>
+                <hr style="margin: 10px 0;"/>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <thead>
                         <tr style="background-color: #f1f5f9;">
-                            <th style="border: 1px solid #cbd5e1; padding: 8px;">N°</th>
-                            <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Cliente</th>
-                            ${meses.map(m => `<th style="border: 1px solid #cbd5e1; padding: 8px;">${m}</th>`).join('')}
-                            <th style="border: 1px solid #cbd5e1; padding: 8px;">Total Devendo</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-weight: bold;">N°</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-weight: bold;">Cliente</th>
+                            ${meses.map(m => `<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-weight: bold;">${m}</th>`).join('')}
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-weight: bold;">Total Devendo</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1303,13 +1284,13 @@
                     </tbody>
                     <tfoot>
                         <tr style="background-color: #1e293b; color: white;">
-                            <td colspan="${meses.length + 2}" style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;"><strong>TOTAL GERAL:</strong></td>
-                            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(clientesFiltrados.reduce((sum, c) => sum + calcularSomaCliente(c), 0))}</strong></td>
+                            <td colspan="${meses.length + 1}" style="border: 1px solid #cbd5e1; padding: 12px; text-align: right;"><strong style="font-size: 1.1rem;">TOTAL GERAL:</strong></td>
+                            <td style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;"><strong style="font-size: 1.1rem;">${formatMoney(totalGeralValor)}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
-                <hr/>
-                <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 30px;">
+                <hr style="margin: 20px 0 10px 0;"/>
+                <p style="text-align: center; font-size: 11px; color: #64748b; margin: 20px 0 0 0;">
                     Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2026 - Sistema de Controle de Débitos
                 </p>
             </div>
@@ -1343,21 +1324,23 @@
                 }
             }
             
+            const somaTotal = calcularSomaCliente(cliente);
+            
             const element = document.createElement('div');
             element.innerHTML = `
-                <div style="padding: 20px; font-family: Arial, sans-serif;">
-                    <h1 style="text-align: center; color: #1e293b;">DN Controle Débito - Relatório Individual</h1>
-                    <p style="text-align: center; color: #64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
-                    <hr/>
+                <div style="padding: 20px; font-family: Arial, sans-serif; width: 100%;">
+                    <h1 style="text-align: center; color: #1e293b; margin: 0 0 10px 0;">DN Controle Débito - Relatório Individual</h1>
+                    <p style="text-align: center; color: #64748b; margin: 0 0 5px 0;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                    <hr style="margin: 10px 0;"/>
                     <div style="margin-top: 20px;">
-                        <h2 style="color: #2563eb;">Cliente: ${cliente.nome}</h2>
-                        <h3>Meses com Débitos Pendentes:</h3>
+                        <h2 style="color: #2563eb; margin: 0 0 15px 0;">Cliente: ${cliente.nome}</h2>
+                        <h3 style="margin: 10px 0;">Meses com Débitos Pendentes:</h3>
                         ${mesesDevedores.length > 0 ? `
                             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                                 <thead>
                                     <tr style="background-color: #f1f5f9;">
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Mês Referência</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px;">Valor Devendo</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">Mês Referência</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">Valor Devendo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1370,15 +1353,15 @@
                                 </tbody>
                                 <tfoot>
                                     <tr style="background-color: #fef9e3;">
-                                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;"><strong>TOTAL DEVEDOR:</strong></td>
-                                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(calcularSomaCliente(cliente))}</strong></td>
+                                        <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: right;"><strong>TOTAL DEVEDOR:</strong></td>
+                                        <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;"><strong style="font-size: 1.1rem;">${formatMoney(somaTotal)}</strong></td>
                                     </tr>
                                 </tfoot>
                             </table>
-                        ` : '<p style="color: green;">✅ Este cliente não possui débitos pendentes!</p>'}
+                        ` : '<p style="color: green; font-size: 1.1rem;">✅ Este cliente não possui débitos pendentes!</p>'}
                     </div>
-                    <hr/>
-                    <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 30px;">
+                    <hr style="margin: 20px 0 10px 0;"/>
+                    <p style="text-align: center; font-size: 11px; color: #64748b; margin: 20px 0 0 0;">
                         Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2026 - Sistema de Controle de Débitos
                     </p>
                 </div>
@@ -1582,7 +1565,7 @@
         const thead = document.getElementById('tableHeader');
         if (!thead) return;
         let html = '<tr>';
-        html += '<th style="width: 70px;">N° (Clique p/ ordenar)</th>';
+        html += '<th style="width: 70px;">N° (duplo clique)</th>';
         html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
             html += `<th>📆 ${meses[i]}</th>`;
@@ -1610,7 +1593,7 @@
             const estiloOculto = (termoBusca !== '' && !nomeLower.includes(termoBusca)) ? 'linha-oculta' : '';
             
             html += `<tr data-cliente-id="${cliente.id}" draggable="true" class="${estiloOculto}">`;
-            html += `<td class="numero-col"><span class="numero-atual">${idx + 1}</span></td>`;
+            html += `<td class="numero-col" data-cliente-id="${cliente.id}" title="Duplo clique para reordenar"><span class="numero-atual">${idx + 1}</span></td>`;
             
             html += `<td class="cliente-nome">`;
             if (editMode) {
@@ -1647,7 +1630,6 @@
             html += `<td class="acoes-col">
                         <button class="btn-pagar-linha" data-cliente-id="${cliente.id}" title="Pagar todos os débitos da linha">💰</button>
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
-                        <button class="btn-reordenar" data-cliente-id="${cliente.id}" title="Reordenar para posição específica">🔢</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
                         </td>`;
             html += `<td style="text-align:center;"><span class="drag-handle" title="Arraste para reorganizar">⋮⋮</span></td>`;
@@ -1676,11 +1658,6 @@
             btn.addEventListener('click', pagarLinhaHandler);
         });
         
-        document.querySelectorAll('.btn-reordenar').forEach(btn => {
-            btn.removeEventListener('click', reordenarHandler);
-            btn.addEventListener('click', reordenarHandler);
-        });
-        
         document.querySelectorAll('.circulo-verde').forEach(btn => {
             btn.removeEventListener('click', copiarHorizontalHandler);
             btn.addEventListener('click', copiarHorizontalHandler);
@@ -1689,6 +1666,11 @@
         document.querySelectorAll('.circulo-laranja').forEach(btn => {
             btn.removeEventListener('click', copiarVerticalHandler);
             btn.addEventListener('click', copiarVerticalHandler);
+        });
+        
+        document.querySelectorAll('.numero-col').forEach(cell => {
+            cell.removeEventListener('dblclick', numeroDblClickHandler);
+            cell.addEventListener('dblclick', numeroDblClickHandler);
         });
         
         setupDragAndDrop();
@@ -1704,6 +1686,14 @@
         }
         
         aplicarFiltroBusca();
+    }
+    
+    function numeroDblClickHandler(e) {
+        const cell = e.currentTarget;
+        const clienteId = parseInt(cell.getAttribute('data-cliente-id'));
+        if (clienteId) {
+            reordenarCliente(clienteId);
+        }
     }
     
     function attachEventListeners() {
@@ -1745,14 +1735,6 @@
         const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
         if (clienteId) {
             editarCliente(clienteId);
-        }
-    }
-    
-    function reordenarHandler(e) {
-        const btn = e.currentTarget;
-        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
-        if (clienteId) {
-            reordenarCliente(clienteId);
         }
     }
     
