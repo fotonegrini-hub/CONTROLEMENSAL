@@ -378,6 +378,7 @@
             color: #0c4a6e;
         }
 
+        /* ALERTA: só aparece quando o mês TEM VALOR DEVENDO E é >= 3º mês (índice >= 2) */
         .alerta-mes {
             background-color: #fff3cd !important;
             position: relative;
@@ -639,7 +640,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 10px;">
         <button class="add-cliente-btn" id="btnAddCliente">➕ Adicionar Cliente</button>
         <div class="legenda">
-            <span>🔔 <span class="badge-alerta"></span> 3º mês ou mais: alerta</span>
+            <span>🔔 <span class="badge-alerta"></span> Alerta apenas em meses com DÉBITO (3º mês+)</span>
             <span>💡 Vazio = PAGO</span>
             <span>💰 Valor = DEVENDO</span>
             <span>↹ TAB navega | ↵ ENTER salva</span>
@@ -795,6 +796,11 @@
         const soma = calcularSomaCliente(cliente);
         const spanElement = document.getElementById(`soma-cliente-${clienteId}`);
         if (spanElement) spanElement.innerText = formatMoney(soma);
+    }
+    
+    // Função para verificar se um mês específico deve ter alerta (índice >= 2 E tem valor > 0)
+    function deveTerAlerta(mesIndex, valor) {
+        return (mesIndex >= 2 && valor !== null && !isNaN(valor) && valor > 0);
     }
     
     function setValorClienteMes(clienteId, mesIndex, rawValue, salvarERenderizar = true) {
@@ -1254,9 +1260,8 @@
         let html = '';
         for (let i = 0; i < meses.length; i++) {
             let mes = meses[i];
-            let alertIcon = (i >= 2) ? '⚠️' : '';
             html += `<div class="mes-badge">
-                        ${alertIcon} ${mes}
+                        ${mes}
                         <button class="remover-mes-btn" data-mes-index="${i}" title="Remover mês">✕</button>
                      </div>`;
         }
@@ -1277,8 +1282,7 @@
         html += '<th style="width: 50px;">N°</th>';
         html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
-            let alertaClasse = (i >= 2) ? ' style="background:#ffedd5;"' : '';
-            html += `<th${alertaClasse}>📆 ${meses[i]}</th>`;
+            html += `<th>📆 ${meses[i]}</th>`;
         }
         html += '<th>💵 Soma da linha</th>';
         html += '<th>⚙️ Ações</th>';
@@ -1291,7 +1295,7 @@
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
         if (clientes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td><tr>';
             return;
         }
         
@@ -1313,7 +1317,9 @@
             for (let i = 0; i < meses.length; i++) {
                 let valorAtual = cliente.valores[i];
                 let valorExibido = (valorAtual !== null && !isNaN(valorAtual)) ? valorAtual.toFixed(2).replace('.', ',') : '';
-                let alertaClasseTd = (i >= 2) ? 'alerta-mes' : '';
+                // Só aplica alerta se: índice >= 2 E tem valor devendo (>0)
+                const temAlerta = deveTerAlerta(i, valorAtual);
+                const alertaClasseTd = temAlerta ? 'alerta-mes' : '';
                 html += `<td class="${alertaClasseTd}" style="text-align:center;">`;
                 if (editMode) {
                     html += `<input type="text" class="valor-input" data-cliente-id="${cliente.id}" data-mes-index="${i}" value="${escapeHtml(valorExibido)}" placeholder="0,00">`;
@@ -1328,7 +1334,7 @@
             html += `<td class="acoes-col">
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
-                      </td>`;
+                       </td>`;
             html += `<td style="text-align:center;"><span class="drag-handle" title="Arraste para reorganizar">⋮⋮</span></td>`;
             html += `</tr>`;
         }
@@ -1436,7 +1442,7 @@
         carregarTema();
         const dadosCarregados = carregarDadosSalvos();
         if (!dadosCarregados || clientes.length === 0) {
-            meses = ['Março/2025', 'Abril/2025', 'Maio/2025'];
+            meses = ['Março/2025', 'Abril/2025', 'Maio/2025', 'Junho/2025'];
             clientes = [];
             nextClienteId = 1;
             
@@ -1444,18 +1450,21 @@
             cliente1.valores[0] = 250.00;
             cliente1.valores[1] = null;
             cliente1.valores[2] = 320.50;
+            cliente1.valores[3] = null;
             clientes.push(cliente1);
             
             let cliente2 = { id: nextClienteId++, nome: 'Marcelo Gomes', valores: {} };
             cliente2.valores[0] = 120.00;
             cliente2.valores[1] = 120.00;
             cliente2.valores[2] = null;
+            cliente2.valores[3] = 80.00;
             clientes.push(cliente2);
             
             let cliente3 = { id: nextClienteId++, nome: 'Ana Beatriz', valores: {} };
             cliente3.valores[0] = null;
             cliente3.valores[1] = 89.90;
             cliente3.valores[2] = 199.99;
+            cliente3.valores[3] = null;
             clientes.push(cliente3);
         }
         
