@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DN Controle Débito - Gestão de Clientes Mensal</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        /* Temas */
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        body.tema-claro {
+            background: #e9f0f5;
+        }
+
+        body.tema-escuro {
+            background: #0f172a;
+        }
+
+        body.tema-escuro .app-container {
+            background: #1e293b;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        body.tema-escuro .meses-toolbar {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        body.tema-escuro .mes-badge {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        body.tema-escuro .btn-add-mes {
+            background: #3b82f6;
+        }
+
+        body.tema-escuro .clientes-table th {
+            background: #0f172a;
+            color: #f1f5f9;
+            border-bottom-color: #334155;
+        }
+
+        body.tema-escuro .clientes-table td {
+            border-bottom-color: #334155;
+            color: #cbd5e1;
+        }
+
+        body.tema-escuro .nome-input {
+            background: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        body.tema-escuro .nome-input:focus {
+            border-color: #3b82f6;
+        }
+
+        body.tema-escuro .valor-input {
+            background: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        body.tema-escuro .valor-input:read-only {
+            background-color: #1e293b;
+        }
+
+        body.tema-escuro .soma-linha {
+            background: #2d1f00;
+            color: #fbbf24;
+        }
+
+        body.tema-escuro .total-geral-footer {
+            background: #0f172a;
+        }
+
+        body.tema-escuro .total-valor {
+            background: #020617;
+        }
+
+        body.tema-escuro .remove-cliente {
+            background: #450a0a;
+            color: #f87171;
+        }
+
+        body.tema-escuro .remove-cliente:hover {
+            background: #7f1a1a;
+        }
+
+        body.tema-escuro .add-cliente-btn {
+            background: #059669;
+        }
+
+        body.tema-escuro .legenda {
+            color: #94a3b8;
+        }
+
+        body.tema-escuro .nome-display {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+            padding: 1.5rem 1rem 1rem 1rem;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 40px);
+        }
+
+        /* Cabeçalho principal */
+        .main-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        body.tema-escuro .main-header {
+            border-bottom-color: #334155;
+        }
+
+        .main-header h1 {
+            font-size: 2rem;
+            margin: 0;
+            color: #1e2f3e;
+            letter-spacing: -0.5px;
+        }
+
+        body.tema-escuro .main-header h1 {
+            color: #f1f5f9;
+        }
+
+        .main-header p {
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        body.tema-escuro .main-header p {
+            color: #94a3b8;
+        }
+
+        /* top actions */
+        .top-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn-csv {
+            background: #10b981;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-csv.import {
+            background: #3b82f6;
+        }
+
+        .btn-csv:hover {
+            transform: scale(0.97);
+            filter: brightness(1.05);
+        }
+
+        .btn-edit-mode {
+            background: #8b5cf6;
+        }
+
+        .btn-theme {
+            background: #6366f1;
+        }
+
+        .meses-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0 16px 0;
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 60px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .meses-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .mes-badge {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.1s;
+        }
+
+        .mes-badge button {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #94a3b8;
+            font-weight: bold;
+            padding: 0 4px;
+            transition: 0.1s;
+        }
+        .mes-badge button:hover { color: #dc2626; transform: scale(1.1);}
+
+        .btn-add-mes {
+            background: #2563eb;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 40px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.15s;
+        }
+        .btn-add-mes:hover { background: #1d4ed8; transform: scale(0.97);}
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #eef2ff;
+            background: #ffffff;
+            margin-top: 12px;
+            flex: 1;
+        }
+
+        body.tema-escuro .table-wrapper {
+            border-color: #334155;
+            background: #1e293b;
+        }
+
+        .clientes-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 600px;
+        }
+
+        .clientes-table th {
+            background: #f1f5f9;
+            padding: 14px 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+
+        .clientes-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #ecf3fa;
+            vertical-align: middle;
+        }
+
+        .cliente-nome {
+            font-weight: 600;
+        }
+        
+        .nome-display {
+            font-weight: 500;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 140px;
+            cursor: pointer;
+        }
+        
+        .nome-input {
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            padding: 8px 12px;
+            width: 140px;
+            font-weight: 500;
+            background: white;
+            transition: 0.1s;
+            font-size: 0.85rem;
+        }
+        
+        .nome-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+
+        .valor-input {
+            width: 110px;
+            padding: 8px 10px;
+            border-radius: 24px;
+            border: 1px solid #cbd5e1;
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.9rem;
+            background: white;
+        }
+        
+        .valor-input:read-only {
+            background-color: #f1f5f9;
+            cursor: pointer;
+        }
+        
+        .valor-input:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        .soma-linha {
+            font-weight: 700;
+            background: #fef9e3;
+            text-align: center;
+            border-radius: 24px;
+            padding: 6px 12px;
+            display: inline-block;
+            min-width: 80px;
+            color: #0c4a6e;
+        }
+
+        .alerta-mes {
+            background-color: #fff3cd !important;
+            position: relative;
+            box-shadow: inset 0 0 0 1px #ffecb3;
+        }
+        .alerta-mes .valor-input {
+            background-color: #fff5e0;
+            border-color: #f7b32b;
+        }
+
+        body.tema-escuro .alerta-mes {
+            background-color: #422c00 !important;
+        }
+        body.tema-escuro .alerta-mes .valor-input {
+            background-color: #5c3d00;
+            border-color: #f59e0b;
+        }
+
+        .total-geral-footer {
+            margin-top: 24px;
+            background: #1e293b;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .total-geral-footer span:first-child {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .total-valor {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: #0f172a;
+            padding: 6px 20px;
+            border-radius: 60px;
+            font-family: monospace;
+        }
+
+        .legenda {
+            display: flex;
+            gap: 20px;
+            font-size: 0.7rem;
+            margin: 12px 0 0 8px;
+            color: #475569;
+        }
+        .legenda span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge-alerta {
+            width: 16px;
+            height: 16px;
+            background: #fff3cd;
+            border: 1px solid #f7b32b;
+            border-radius: 4px;
+        }
+        button.small-icon {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .remove-cliente {
+            color: #dc2626;
+            font-weight: bold;
+            background: #fee2e2;
+            border-radius: 30px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.1s;
+        }
+        .remove-cliente:hover {
+            background: #fecaca;
+            transform: scale(1.05);
+        }
+        .add-cliente-btn {
+            background: #10b981;
+            border: none;
+            margin-top: 16px;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .acoes-col {
+            text-align: center;
+        }
+        
+        .edit-mode-indicator {
+            background: #8b5cf6;
+            color: white;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        /* Rodapé fixo */
+        .footer-fixo {
+            margin-top: 30px;
+            padding: 16px 20px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #1e293b;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        body.tema-escuro .footer-fixo {
+            background: #0f172a;
+            color: #cbd5e1;
+            border-top-color: #334155;
+        }
+
+        .footer-fixo a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        body.tema-escuro .footer-fixo a {
+            color: #60a5fa;
+        }
+
+        .footer-fixo a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 700px) {
+            .clientes-table th, .clientes-table td {
+                padding: 8px 4px;
+            }
+            .valor-input { width: 85px; }
+            .footer-fixo { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body class="tema-claro">
+<div class="app-container">
+    <!-- Cabeçalho DN Controle Débito -->
+    <div class="main-header">
+        <h1>📊 DN Controle Débito</h1>
+        <p>Gestão de Clientes | Controle Financeiro Mensal</p>
+    </div>
+    
+    <!-- Botões CSV, tema e modo edição -->
+    <div class="top-actions">
+        <button class="btn-csv" id="btnExportarCSV">📥 Exportar CSV</button>
+        <button class="btn-csv import" id="btnImportarCSV">📤 Importar CSV</button>
+        <button class="btn-csv btn-theme" id="btnToggleTheme">🌓 Tema Escuro/Claro</button>
+        <button class="btn-csv btn-edit-mode" id="btnToggleEditMode">✏️ Modo Edição: ATIVADO</button>
+    </div>
+
+    <div class="meses-toolbar">
+        <div class="meses-list" id="mesesContainer"></div>
+        <button class="btn-add-mes" id="btnAddMes">➕ Adicionar Mês</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="clientes-table" id="clientesTable">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+        <button class="add-cliente-btn" id="btnAddCliente">➕ Adicionar Cliente</button>
+        <div class="legenda">
+            <span>🔔 <span class="badge-alerta"></span> 3º mês ou mais: cor de alerta (destaque)</span>
+            <span>💡 Campo vazio = considerado PAGO</span>
+            <span>💰 Campo com valor = DEVENDO</span>
+        </div>
+    </div>
+
+    <div class="total-geral-footer">
+        <span>💰 TOTAL GERAL (SOMA DE TODOS OS DÉBITOS) </span>
+        <span class="total-valor" id="totalGeralValor">R$ 0,00</span>
+    </div>
+
+    <!-- Rodapé Fixo -->
+    <div class="footer-fixo">
+        Desenvolvedor Daniel Negrini 📱 (14) 99692-2983 | © 2025 - Sistema de Controle de Débitos
+    </div>
+</div>
+
+<script>
+    // ESTRUTURA DE DADOS
+    let meses = [];
+    let clientes = [];
+    let nextClienteId = 1;
+    let editMode = true;
+    let temaAtual = 'claro'; // claro ou escuro
+    
+    // Função para alternar tema
+    function toggleTema() {
+        const body = document.body;
+        if (temaAtual === 'claro') {
+            body.classList.remove('tema-claro');
+            body.classList.add('tema-escuro');
+            temaAtual = 'escuro';
+            localStorage.setItem('temaPreferido', 'escuro');
+        } else {
+            body.classList.remove('tema-escuro');
+            body.classList.add('tema-claro');
+            temaAtual = 'claro';
+            localStorage.setItem('temaPreferido', 'claro');
+        }
+    }
+    
+    function carregarTema() {
+        const temaSalvo = localStorage.getItem('temaPreferido');
+        if (temaSalvo === 'escuro') {
+            document.body.classList.remove('tema-claro');
+            document.body.classList.add('tema-escuro');
+            temaAtual = 'escuro';
+        } else {
+            document.body.classList.remove('tema-escuro');
+            document.body.classList.add('tema-claro');
+            temaAtual = 'claro';
+        }
+    }
+    
+    // Salvar automaticamente no localStorage
+    function salvarAutomatico() {
+        const dados = {
+            meses: meses,
+            clientes: clientes,
+            nextClienteId: nextClienteId
+        };
+        localStorage.setItem('clientesMensaisData', JSON.stringify(dados));
+        console.log('✅ Dados salvos automaticamente');
+    }
+    
+    function carregarDadosSalvos() {
+        const salvos = localStorage.getItem('clientesMensaisData');
+        if (salvos) {
+            try {
+                const dados = JSON.parse(salvos);
+                meses = dados.meses || [];
+                clientes = dados.clientes || [];
+                nextClienteId = dados.nextClienteId || 1;
+                for (let cliente of clientes) {
+                    if (!cliente.valores) cliente.valores = {};
+                    for (let i = 0; i < meses.length; i++) {
+                        if (cliente.valores[i] === undefined) cliente.valores[i] = null;
+                    }
+                }
+                console.log('📀 Dados carregados do localStorage');
+                return true;
+            } catch(e) { console.error('Erro ao carregar:', e); }
+        }
+        return false;
+    }
+    
+    function formatMoney(value) {
+        if (value === null || value === undefined || isNaN(value)) return "R$ 0,00";
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    }
+    
+    function parseValorInput(str) {
+        if (str === null || str === undefined || str.trim() === "") return null;
+        let cleaned = str.trim().replace(/[R$\s]/g, '').replace(',', '.');
+        let num = parseFloat(cleaned);
+        return isNaN(num) ? null : num;
+    }
+    
+    function calcularSomaCliente(cliente) {
+        let total = 0;
+        for (let i = 0; i < meses.length; i++) {
+            let val = cliente.valores[i];
+            if (val !== null && !isNaN(val) && val > 0) {
+                total += val;
+            }
+        }
+        return total;
+    }
+    
+    function calcularTotalGeral() {
+        let total = 0;
+        for (let cliente of clientes) {
+            total += calcularSomaCliente(cliente);
+        }
+        return total;
+    }
+    
+    function atualizarTotalGeralUI() {
+        const total = calcularTotalGeral();
+        const totalEl = document.getElementById('totalGeralValor');
+        if (totalEl) totalEl.innerText = formatMoney(total);
+    }
+    
+    function atualizarSomaLinhaUI(clienteId) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (!cliente) return;
+        const soma = calcularSomaCliente(cliente);
+        const spanElement = document.getElementById(`soma-cliente-${clienteId}`);
+        if (spanElement) spanElement.innerText = formatMoney(soma);
+    }
+    
+    function setValorClienteMes(clienteId, mesIndex, rawValue) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (!cliente) return;
+        let numericValue = parseValorInput(rawValue);
+        if (rawValue === null || rawValue === undefined || rawValue.trim() === "") {
+            numericValue = null;
+        }
+        if (numericValue !== null && isNaN(numericValue)) numericValue = null;
+        if (numericValue !== null && numericValue <= 0) numericValue = null;
+        cliente.valores[mesIndex] = numericValue;
+        
+        atualizarSomaLinhaUI(clienteId);
+        atualizarTotalGeralUI();
+        salvarAutomatico();
+        renderizarTudo();
+    }
+    
+    function setNomeCliente(clienteId, novoNome) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (cliente && novoNome !== undefined) {
+            cliente.nome = novoNome.trim() === "" ? "Cliente" : novoNome;
+            salvarAutomatico();
+            renderizarTudo();
+        }
+    }
+    
+    function adicionarNovoCliente() {
+        const novoId = nextClienteId++;
+        const valoresIniciais = {};
+        for (let i = 0; i < meses.length; i++) {
+            valoresIniciais[i] = null;
+        }
+        clientes.push({
+            id: novoId,
+            nome: `Cliente ${novoId}`,
+            valores: valoresIniciais
+        });
+        salvarAutomatico();
+        renderizarTudo();
+    }
+    
+    function removerCliente(clienteId) {
+        clientes = clientes.filter(c => c.id != clienteId);
+        salvarAutomatico();
+        renderizarTudo();
+    }
+    
+    function adicionarMes(nomeMesPersonalizado = null) {
+        let novoMes = nomeMesPersonalizado;
+        if (!novoMes) {
+            const data = new Date();
+            const mesAno = `${data.toLocaleString('default', { month: 'short' })}/${data.getFullYear().toString().slice(-2)}`;
+            let contador = 1;
+            let base = mesAno;
+            while (meses.includes(base)) {
+                base = `${mesAno} (${contador})`;
+                contador++;
+            }
+            novoMes = base;
+        } else {
+            if (meses.includes(novoMes)) {
+                let cnt = 1;
+                while (meses.includes(`${novoMes} (${cnt})`)) cnt++;
+                novoMes = `${novoMes} (${cnt})`;
+            }
+        }
+        meses.push(novoMes);
+        for (let cliente of clientes) {
+            cliente.valores[meses.length - 1] = null;
+        }
+        salvarAutomatico();
+        renderizarTudo();
+    }
+    
+    function removerMes(index) {
+        if (index < 0 || index >= meses.length) return;
+        if (confirm(`Remover o mês "${meses[index]}" e todos os valores relacionados?`)) {
+            meses.splice(index, 1);
+            for (let cliente of clientes) {
+                const novosValores = {};
+                for (let i = 0; i < meses.length; i++) {
+                    if (i >= index) {
+                        novosValores[i] = cliente.valores[i+1];
+                    } else {
+                        novosValores[i] = cliente.valores[i];
+                    }
+                }
+                cliente.valores = novosValores;
+            }
+            salvarAutomatico();
+            renderizarTudo();
+        }
+    }
+    
+    function exportarCSV() {
+        if (meses.length === 0) {
+            alert('Não há meses para exportar');
+            return;
+        }
+        
+        let csvRows = [];
+        let headers = ['Nome do Cliente', ...meses];
+        csvRows.push(headers.join(','));
+        
+        for (let cliente of clientes) {
+            let row = [cliente.nome];
+            for (let i = 0; i < meses.length; i++) {
+                let valor = cliente.valores[i];
+                if (valor !== null && !isNaN(valor) && valor > 0) {
+                    row.push(valor.toFixed(2));
+                } else {
+                    row.push('');
+                }
+            }
+            csvRows.push(row.join(','));
+        }
+        
+        const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', 'clientes_mensais.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        alert('CSV exportado com sucesso!');
+    }
+    
+    function importarCSV(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                if (lines.length < 2) {
+                    alert('Arquivo inválido');
+                    return;
+                }
+                
+                const headers = lines[0].split(',').map(h => h.trim());
+                const novosMeses = headers.slice(1);
+                
+                if (novosMeses.length === 0) {
+                    alert('Nenhum mês encontrado no CSV');
+                    return;
+                }
+                
+                const novosClientes = [];
+                let maxId = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === '') continue;
+                    const cols = lines[i].split(',');
+                    const nome = cols[0]?.trim() || 'Cliente';
+                    const valores = {};
+                    
+                    for (let j = 0; j < novosMeses.length; j++) {
+                        let valStr = cols[j+1]?.trim();
+                        if (valStr && valStr !== '') {
+                            let num = parseFloat(valStr.replace(',', '.'));
+                            valores[j] = (isNaN(num) ? null : (num > 0 ? num : null));
+                        } else {
+                            valores[j] = null;
+                        }
+                    }
+                    
+                    const novoId = i;
+                    if (novoId > maxId) maxId = novoId;
+                    novosClientes.push({
+                        id: novoId,
+                        nome: nome,
+                        valores: valores
+                    });
+                }
+                
+                if (novosClientes.length > 0) {
+                    meses = novosMeses;
+                    clientes = novosClientes;
+                    nextClienteId = maxId + 1;
+                    salvarAutomatico();
+                    renderizarTudo();
+                    alert(`Importado ${novosClientes.length} clientes e ${meses.length} meses com sucesso!`);
+                } else {
+                    alert('Nenhum cliente encontrado no CSV');
+                }
+            } catch(err) {
+                console.error(err);
+                alert('Erro ao importar CSV: ' + err.message);
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+    
+    function renderMesesBar() {
+        const container = document.getElementById('mesesContainer');
+        if (!container) return;
+        let html = '';
+        for (let i = 0; i < meses.length; i++) {
+            let mes = meses[i];
+            let alertIcon = (i >= 2) ? '⚠️' : '';
+            html += `<div class="mes-badge">
+                        ${alertIcon} ${mes}
+                        <button class="remover-mes-btn" data-mes-index="${i}" title="Remover mês">✕</button>
+                     </div>`;
+        }
+        container.innerHTML = html;
+        document.querySelectorAll('.remover-mes-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = btn.getAttribute('data-mes-index');
+                if (idx !== null) removerMes(parseInt(idx));
+            });
+        });
+    }
+    
+    function renderHeader() {
+        const thead = document.getElementById('tableHeader');
+        if (!thead) return;
+        let html = '<tr>';
+        html += '<th style="min-width:150px">Cliente (nome editável)</th>';
+        for (let i = 0; i < meses.length; i++) {
+            let alertaClasse = (i >= 2) ? ' style="background:#ffedd5;"' : '';
+            html += `<th${alertaClasse}>📆 ${meses[i]}</th>`;
+        }
+        html += '<th>💵 Soma da linha (devendo)</th>';
+        html += '<th>🗑️ Ações</th>';
+        html += '</tr>';
+        thead.innerHTML = html;
+    }
+    
+    function renderBody() {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        if (clientes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 3) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td></tr>';
+            return;
+        }
+        
+        let html = '';
+        for (let idxCliente = 0; idxCliente < clientes.length; idxCliente++) {
+            const cliente = clientes[idxCliente];
+            const somaCliente = calcularSomaCliente(cliente);
+            html += `<tr data-cliente-id="${cliente.id}">`;
+            
+            html += `<td class="cliente-nome">`;
+            if (editMode) {
+                html += `<input type="text" class="nome-input" data-cliente-id="${cliente.id}" value="${escapeHtml(cliente.nome)}" placeholder="Nome do cliente">`;
+            } else {
+                html += `<div class="nome-display" data-cliente-id="${cliente.id}" style="cursor:default;">${escapeHtml(cliente.nome)}</div>`;
+            }
+            html += `</td>`;
+            
+            for (let i = 0; i < meses.length; i++) {
+                let valorAtual = cliente.valores[i];
+                let valorExibido = (valorAtual !== null && !isNaN(valorAtual)) ? valorAtual.toFixed(2).replace('.', ',') : '';
+                let alertaClasseTd = (i >= 2) ? 'alerta-mes' : '';
+                html += `<td class="${alertaClasseTd}" style="text-align:center;">`;
+                if (editMode) {
+                    html += `<input type="text" class="valor-input" data-cliente-id="${cliente.id}" data-mes-index="${i}" value="${escapeHtml(valorExibido)}" placeholder="0,00">`;
+                } else {
+                    const displayValor = valorExibido ? `R$ ${valorExibido}` : '✓ Pago';
+                    html += `<div style="padding:8px; text-align:center; font-weight:500;">${displayValor}</div>`;
+                }
+                html += `</td>`;
+            }
+            
+            html += `<td style="text-align:center; background:#fef9e3;"><span class="soma-linha" id="soma-cliente-${cliente.id}">${formatMoney(somaCliente)}</span></td>`;
+            html += `<td class="acoes-col"><button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button></td>`;
+            html += '</tr>';
+        }
+        tbody.innerHTML = html;
+        
+        if (editMode) {
+            attachEventListeners();
+        }
+    }
+    
+    function attachEventListeners() {
+        document.querySelectorAll('.nome-input').forEach(input => {
+            input.removeEventListener('blur', nomeChangeHandler);
+            input.addEventListener('blur', nomeChangeHandler);
+        });
+        document.querySelectorAll('.valor-input').forEach(input => {
+            input.removeEventListener('blur', valorChangeHandler);
+            input.addEventListener('blur', valorChangeHandler);
+        });
+        document.querySelectorAll('.remove-cliente').forEach(btn => {
+            btn.removeEventListener('click', removeClienteHandler);
+            btn.addEventListener('click', removeClienteHandler);
+        });
+    }
+    
+    function nomeChangeHandler(e) {
+        const input = e.target;
+        const clienteId = parseInt(input.getAttribute('data-cliente-id'));
+        if (clienteId) setNomeCliente(clienteId, input.value);
+    }
+    
+    function valorChangeHandler(e) {
+        const input = e.target;
+        const clienteId = parseInt(input.getAttribute('data-cliente-id'));
+        const mesIndex = parseInt(input.getAttribute('data-mes-index'));
+        if (!isNaN(clienteId) && !isNaN(mesIndex)) {
+            setValorClienteMes(clienteId, mesIndex, input.value);
+        }
+    }
+    
+    function removeClienteHandler(e) {
+        const btn = e.currentTarget;
+        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
+        if (clienteId && confirm("Remover este cliente e todos os débitos?")) {
+            removerCliente(clienteId);
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function toggleEditMode() {
+        editMode = !editMode;
+        const btn = document.getElementById('btnToggleEditMode');
+        if (btn) {
+            btn.innerHTML = editMode ? '✏️ Modo Edição: ATIVADO' : '👁️ Modo Edição: DESATIVADO';
+            btn.style.background = editMode ? '#8b5cf6' : '#64748b';
+        }
+        renderizarTudo();
+    }
+    
+    function renderizarTudo() {
+        renderMesesBar();
+        renderHeader();
+        renderBody();
+        atualizarTotalGeralUI();
+    }
+    
+    function init() {
+        carregarTema();
+        const dadosCarregados = carregarDadosSalvos();
+        if (!dadosCarregados || clientes.length === 0) {
+            meses = ['Janeiro', 'Fevereiro', 'Março'];
+            clientes = [];
+            nextClienteId = 1;
+            
+            let cliente1 = { id: nextClienteId++, nome: 'Larissa Santos', valores: {} };
+            cliente1.valores[0] = 250.00;
+            cliente1.valores[1] = null;
+            cliente1.valores[2] = 320.50;
+            clientes.push(cliente1);
+            
+            let cliente2 = { id: nextClienteId++, nome: 'Marcelo Gomes', valores: {} };
+            cliente2.valores[0] = 120.00;
+            cliente2.valores[1] = 120.00;
+            cliente2.valores[2] = null;
+            clientes.push(cliente2);
+            
+            let cliente3 = { id: nextClienteId++, nome: 'Ana Beatriz', valores: {} };
+            cliente3.valores[0] = null;
+            cliente3.valores[1] = 89.90;
+            cliente3.valores[2] = 199.99;
+            clientes.push(cliente3);
+        }
+        
+        renderizarTudo();
+        
+        document.getElementById('btnAddMes')?.addEventListener('click', () => adicionarMes());
+        document.getElementById('btnAddCliente')?.addEventListener('click', () => adicionarNovoCliente());
+        document.getElementById('btnExportarCSV')?.addEventListener('click', () => exportarCSV());
+        document.getElementById('btnImportarCSV')?.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv';
+            input.onchange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    importarCSV(e.target.files[0]);
+                }
+            };
+            input.click();
+        });
+        document.getElementById('btnToggleEditMode')?.addEventListener('click', () => toggleEditMode());
+        document.getElementById('btnToggleTheme')?.addEventListener('click', () => toggleTema());
+    }
+    
+    init();
+</script>
+</body>
+</html>
