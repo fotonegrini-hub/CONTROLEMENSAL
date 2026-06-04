@@ -138,6 +138,15 @@
             border-color: #475569;
         }
 
+        body.tema-escuro .btn-reordenar {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        body.tema-escuro .btn-reordenar:hover {
+            background: #7c3aed;
+        }
+
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -368,7 +377,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            min-width: 700px;
+            min-width: 750px;
         }
 
         .clientes-table th {
@@ -620,6 +629,27 @@
             transform: scale(1.05);
         }
         
+        .btn-reordenar {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.8rem;
+            margin: 0 4px;
+        }
+        
+        .btn-reordenar:hover {
+            background: #7c3aed;
+            transform: scale(1.05);
+        }
+        
         .drag-handle {
             cursor: grab;
             font-size: 1.2rem;
@@ -635,8 +665,13 @@
         .numero-col {
             text-align: center;
             font-weight: 600;
-            width: 50px;
+            width: 70px;
             background-color: #f8fafc;
+        }
+        
+        .numero-atual {
+            font-weight: 700;
+            margin-right: 5px;
         }
         
         body.tema-escuro .numero-col {
@@ -736,7 +771,7 @@
             }
             .valor-input { width: 70px; }
             .footer-fixo { font-size: 0.75rem; }
-            .numero-col { width: 40px; }
+            .numero-col { width: 55px; }
             .buscador-input { width: 150px; }
             .circulo-verde, .circulo-laranja { width: 20px; height: 20px; font-size: 0.6rem; }
         }
@@ -788,6 +823,7 @@
             <span>🟢 <span style="background:#10b981; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar valor (horizontal)</span>
             <span>🟠 <span style="background:#f59e0b; width:16px;height:16px;display:inline-block;border-radius:50%;"></span> Copiar para linha abaixo</span>
             <span>💰 <span style="background:#22c55e; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Pagar tudo da linha</span>
+            <span>🔢 <span style="background:#8b5cf6; width:16px;height:16px;display:inline-block;border-radius:4px;"></span> Reordenar posição</span>
             <span>💡 Vazio = PAGO | 🔔 Alerta (3º mês+ débito)</span>
         </div>
     </div>
@@ -1010,6 +1046,36 @@
             } else if (novoNome !== null && novoNome.trim() === "") {
                 setNomeCliente(clienteId, "Cliente", false);
                 renderizarTudo();
+            }
+        }
+    }
+    
+    function reordenarCliente(clienteId) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (!cliente) return;
+        const posicaoAtual = clientes.findIndex(c => c.id == clienteId) + 1;
+        const novaPosicao = prompt(`Cliente: "${cliente.nome}"\nPosição atual: ${posicaoAtual}\nDigite a nova posição (1 à ${clientes.length}):`, posicaoAtual);
+        
+        if (novaPosicao !== null) {
+            let novaPos = parseInt(novaPosicao);
+            if (isNaN(novaPos)) {
+                alert("Por favor, digite um número válido!");
+                return;
+            }
+            if (novaPos < 1 || novaPos > clientes.length) {
+                alert(`Posição inválida! Digite um número entre 1 e ${clientes.length}.`);
+                return;
+            }
+            
+            const indexAtual = clientes.findIndex(c => c.id == clienteId);
+            const indexDestino = novaPos - 1;
+            
+            if (indexAtual !== indexDestino) {
+                const [movido] = clientes.splice(indexAtual, 1);
+                clientes.splice(indexDestino, 0, movido);
+                salvarAutomatico();
+                renderizarTudo();
+                alert(`"${cliente.nome}" movido para posição ${novaPos}!`);
             }
         }
     }
@@ -1515,8 +1581,8 @@
     function renderHeader() {
         const thead = document.getElementById('tableHeader');
         if (!thead) return;
-        let html = '<table>';
-        html += '<th style="width: 50px;">N°</th>';
+        let html = '<tr>';
+        html += '<th style="width: 70px;">N° (Clique p/ ordenar)</th>';
         html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
             html += `<th>📆 ${meses[i]}</th>`;
@@ -1532,7 +1598,7 @@
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
         if (clientes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td>' + '</tr>';
             return;
         }
         
@@ -1544,7 +1610,7 @@
             const estiloOculto = (termoBusca !== '' && !nomeLower.includes(termoBusca)) ? 'linha-oculta' : '';
             
             html += `<tr data-cliente-id="${cliente.id}" draggable="true" class="${estiloOculto}">`;
-            html += `<td class="numero-col">${idx + 1}</td>`;
+            html += `<td class="numero-col"><span class="numero-atual">${idx + 1}</span></td>`;
             
             html += `<td class="cliente-nome">`;
             if (editMode) {
@@ -1581,6 +1647,7 @@
             html += `<td class="acoes-col">
                         <button class="btn-pagar-linha" data-cliente-id="${cliente.id}" title="Pagar todos os débitos da linha">💰</button>
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
+                        <button class="btn-reordenar" data-cliente-id="${cliente.id}" title="Reordenar para posição específica">🔢</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
                         </td>`;
             html += `<td style="text-align:center;"><span class="drag-handle" title="Arraste para reorganizar">⋮⋮</span></td>`;
@@ -1607,6 +1674,11 @@
         document.querySelectorAll('.btn-pagar-linha').forEach(btn => {
             btn.removeEventListener('click', pagarLinhaHandler);
             btn.addEventListener('click', pagarLinhaHandler);
+        });
+        
+        document.querySelectorAll('.btn-reordenar').forEach(btn => {
+            btn.removeEventListener('click', reordenarHandler);
+            btn.addEventListener('click', reordenarHandler);
         });
         
         document.querySelectorAll('.circulo-verde').forEach(btn => {
@@ -1673,6 +1745,14 @@
         const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
         if (clienteId) {
             editarCliente(clienteId);
+        }
+    }
+    
+    function reordenarHandler(e) {
+        const btn = e.currentTarget;
+        const clienteId = parseInt(btn.getAttribute('data-cliente-id'));
+        if (clienteId) {
+            reordenarCliente(clienteId);
         }
     }
     
