@@ -798,7 +798,7 @@
     </div>
 
     <div class="footer-fixo">
-        Desenvolvedor Daniel Negrini 📱 (14) 99692-2983 | © 2025 - Sistema de Controle de Débitos
+        Desenvolvedor Daniel Negrini 📱 (14) 99692-2983 | © 2026 - Sistema de Controle de Débitos
     </div>
 </div>
 
@@ -1227,7 +1227,6 @@
                                 <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>${cliente.nome}</strong></td>`;
                             for (let i = 0; i < meses.length; i++) {
                                 let valor = cliente.valores[i];
-                                // Pagos ficam em branco no PDF
                                 let displayValor = (valor !== null && valor > 0) ? formatMoney(valor) : '';
                                 row += `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${displayValor}</td>`;
                             }
@@ -1245,7 +1244,7 @@
                 </table>
                 <hr/>
                 <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 30px;">
-                    Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2025
+                    Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2026 - Sistema de Controle de Débitos
                 </p>
             </div>
         `;
@@ -1314,7 +1313,7 @@
                     </div>
                     <hr/>
                     <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 30px;">
-                        Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2025
+                        Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2026 - Sistema de Controle de Débitos
                     </p>
                 </div>
             `;
@@ -1516,7 +1515,7 @@
     function renderHeader() {
         const thead = document.getElementById('tableHeader');
         if (!thead) return;
-        let html = '<tr>';
+        let html = '<table>';
         html += '<th style="width: 50px;">N°</th>';
         html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
@@ -1583,7 +1582,7 @@
                         <button class="btn-pagar-linha" data-cliente-id="${cliente.id}" title="Pagar todos os débitos da linha">💰</button>
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
-                       </td>`;
+                        </td>`;
             html += `<td style="text-align:center;"><span class="drag-handle" title="Arraste para reorganizar">⋮⋮</span></td>`;
             html += `</tr>`;
         }
