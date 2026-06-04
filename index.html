@@ -129,7 +129,6 @@
             min-height: calc(100vh - 40px);
         }
 
-        /* Cabeçalho principal */
         .main-header {
             text-align: center;
             margin-bottom: 20px;
@@ -162,7 +161,6 @@
             color: #94a3b8;
         }
 
-        /* top actions */
         .top-actions {
             display: flex;
             gap: 12px;
@@ -201,6 +199,10 @@
 
         .btn-theme {
             background: #6366f1;
+        }
+
+        .btn-pdf {
+            background: #ef4444;
         }
 
         .meses-toolbar {
@@ -466,17 +468,6 @@
             text-align: center;
         }
         
-        .edit-mode-indicator {
-            background: #8b5cf6;
-            color: white;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        /* Rodapé fixo */
         .footer-fixo {
             margin-top: 30px;
             padding: 16px 20px;
@@ -516,26 +507,27 @@
             .footer-fixo { font-size: 0.75rem; }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body class="tema-claro">
 <div class="app-container">
-    <!-- Cabeçalho DN Controle Débito -->
     <div class="main-header">
         <h1>📊 DN Controle Débito</h1>
         <p>Gestão de Clientes | Controle Financeiro Mensal</p>
     </div>
     
-    <!-- Botões CSV, tema e modo edição -->
     <div class="top-actions">
         <button class="btn-csv" id="btnExportarCSV">📥 Exportar CSV</button>
         <button class="btn-csv import" id="btnImportarCSV">📤 Importar CSV</button>
+        <button class="btn-csv btn-pdf" id="btnPDFGeral">📄 PDF Geral</button>
+        <button class="btn-csv btn-pdf" id="btnPDFIndividual">👤 PDF Individual</button>
         <button class="btn-csv btn-theme" id="btnToggleTheme">🌓 Tema Escuro/Claro</button>
         <button class="btn-csv btn-edit-mode" id="btnToggleEditMode">✏️ Modo Edição: ATIVADO</button>
     </div>
 
     <div class="meses-toolbar">
         <div class="meses-list" id="mesesContainer"></div>
-        <button class="btn-add-mes" id="btnAddMes">➕ Adicionar Mês</button>
+        <button class="btn-add-mes" id="btnAddMes">➕ Adicionar Mês na Sequência</button>
     </div>
 
     <div class="table-wrapper">
@@ -550,6 +542,7 @@
             <span>🔔 <span class="badge-alerta"></span> 3º mês ou mais: cor de alerta (destaque)</span>
             <span>💡 Campo vazio = considerado PAGO</span>
             <span>💰 Campo com valor = DEVENDO</span>
+            <span>↹ Tecla TAB navega entre campos</span>
         </div>
     </div>
 
@@ -558,21 +551,18 @@
         <span class="total-valor" id="totalGeralValor">R$ 0,00</span>
     </div>
 
-    <!-- Rodapé Fixo -->
     <div class="footer-fixo">
         Desenvolvedor Daniel Negrini 📱 (14) 99692-2983 | © 2025 - Sistema de Controle de Débitos
     </div>
 </div>
 
 <script>
-    // ESTRUTURA DE DADOS
     let meses = [];
     let clientes = [];
     let nextClienteId = 1;
     let editMode = true;
-    let temaAtual = 'claro'; // claro ou escuro
+    let temaAtual = 'claro';
     
-    // Função para alternar tema
     function toggleTema() {
         const body = document.body;
         if (temaAtual === 'claro') {
@@ -601,7 +591,36 @@
         }
     }
     
-    // Salvar automaticamente no localStorage
+    function getProximoMesNaSequencia() {
+        const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        
+        if (meses.length === 0) {
+            const data = new Date();
+            const mesAtual = mesesNomes[data.getMonth()];
+            const ano = data.getFullYear();
+            return `${mesAtual}/${ano}`;
+        }
+        
+        const ultimoMes = meses[meses.length - 1];
+        const partes = ultimoMes.split('/');
+        let nomeMes = partes[0];
+        let ano = partes[1] ? parseInt(partes[1]) : new Date().getFullYear();
+        
+        let indice = mesesNomes.findIndex(m => m.toLowerCase() === nomeMes.toLowerCase());
+        
+        if (indice !== -1) {
+            indice++;
+            if (indice >= 12) {
+                indice = 0;
+                ano++;
+            }
+            return `${mesesNomes[indice]}/${ano}`;
+        }
+        
+        const data = new Date();
+        return `${mesesNomes[data.getMonth()]}/${data.getFullYear()}`;
+    }
+    
     function salvarAutomatico() {
         const dados = {
             meses: meses,
@@ -609,7 +628,6 @@
             nextClienteId: nextClienteId
         };
         localStorage.setItem('clientesMensaisData', JSON.stringify(dados));
-        console.log('✅ Dados salvos automaticamente');
     }
     
     function carregarDadosSalvos() {
@@ -626,7 +644,6 @@
                         if (cliente.valores[i] === undefined) cliente.valores[i] = null;
                     }
                 }
-                console.log('📀 Dados carregados do localStorage');
                 return true;
             } catch(e) { console.error('Erro ao carregar:', e); }
         }
@@ -725,25 +742,8 @@
         renderizarTudo();
     }
     
-    function adicionarMes(nomeMesPersonalizado = null) {
-        let novoMes = nomeMesPersonalizado;
-        if (!novoMes) {
-            const data = new Date();
-            const mesAno = `${data.toLocaleString('default', { month: 'short' })}/${data.getFullYear().toString().slice(-2)}`;
-            let contador = 1;
-            let base = mesAno;
-            while (meses.includes(base)) {
-                base = `${mesAno} (${contador})`;
-                contador++;
-            }
-            novoMes = base;
-        } else {
-            if (meses.includes(novoMes)) {
-                let cnt = 1;
-                while (meses.includes(`${novoMes} (${cnt})`)) cnt++;
-                novoMes = `${novoMes} (${cnt})`;
-            }
-        }
+    function adicionarMesNaSequencia() {
+        const novoMes = getProximoMesNaSequencia();
         meses.push(novoMes);
         for (let cliente of clientes) {
             cliente.valores[meses.length - 1] = null;
@@ -872,6 +872,154 @@
         reader.readAsText(file, 'UTF-8');
     }
     
+    function gerarPDFGeral() {
+        const element = document.createElement('div');
+        element.innerHTML = `
+            <div style="padding: 20px; font-family: Arial, sans-serif;">
+                <h1 style="text-align: center; color: #1e293b;">DN Controle Débito - Relatório Geral</h1>
+                <p style="text-align: center; color: #64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                <hr/>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #f1f5f9;">
+                            <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Cliente</th>
+                            ${meses.map(m => `<th style="border: 1px solid #cbd5e1; padding: 8px;">${m}</th>`).join('')}
+                            <th style="border: 1px solid #cbd5e1; padding: 8px;">Total Devendo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${clientes.map(cliente => {
+                            let row = `<tr>
+                                <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>${cliente.nome}</strong></td>`;
+                            for (let i = 0; i < meses.length; i++) {
+                                let valor = cliente.valores[i];
+                                let displayValor = (valor !== null && valor > 0) ? formatMoney(valor) : '✓ Pago';
+                                row += `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${displayValor}</td>`;
+                            }
+                            row += `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: #fef9e3;"><strong>${formatMoney(calcularSomaCliente(cliente))}</strong></td>`;
+                            row += `</tr>`;
+                            return row;
+                        }).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background-color: #1e293b; color: white;">
+                            <td colspan="${meses.length + 1}" style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;"><strong>TOTAL GERAL:</strong></td>
+                            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(calcularTotalGeral())}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <hr/>
+                <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 30px;">
+                    Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2025
+                </p>
+            </div>
+        `;
+        
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `relatorio_geral_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, letterRendering: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
+    
+    function gerarPDFIndividual() {
+        if (clientes.length === 0) {
+            alert('Nenhum cliente cadastrado');
+            return;
+        }
+        
+        clientes.forEach((cliente, index) => {
+            const mesesDevedores = [];
+            const valoresDevedores = [];
+            
+            for (let i = 0; i < meses.length; i++) {
+                let valor = cliente.valores[i];
+                if (valor !== null && valor > 0) {
+                    mesesDevedores.push(meses[i]);
+                    valoresDevedores.push(valor);
+                }
+            }
+            
+            const element = document.createElement('div');
+            element.innerHTML = `
+                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                    <h1 style="text-align: center; color: #1e293b;">DN Controle Débito - Relatório Individual</h1>
+                    <p style="text-align: center; color: #64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                    <hr/>
+                    <div style="margin-top: 20px;">
+                        <h2 style="color: #2563eb;">Cliente: ${cliente.nome}</h2>
+                        <h3>Meses com Débitos Pendentes:</h3>
+                        ${mesesDevedores.length > 0 ? `
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                <thead>
+                                    <tr style="background-color: #f1f5f9;">
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Mês Referência</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px;">Valor Devendo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${mesesDevedores.map((mes, idx) => `
+                                        <tr>
+                                            <td style="border: 1px solid #cbd5e1; padding: 8px;">${mes}</td>
+                                            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${formatMoney(valoresDevedores[idx])}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background-color: #fef9e3;">
+                                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;"><strong>TOTAL DEVEDOR:</strong></td>
+                                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(calcularSomaCliente(cliente))}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        ` : '<p style="color: green;">✅ Este cliente não possui débitos pendentes!</p>'}
+                    </div>
+                    <hr/>
+                    <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 30px;">
+                        Desenvolvedor Daniel Negrini (14) 99692-2983 | © 2025
+                    </p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const opt = {
+                    margin: [0.5, 0.5, 0.5, 0.5],
+                    filename: `${cliente.nome.replace(/[^a-z0-9]/gi, '_')}_debitos_${new Date().toISOString().slice(0,10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+            }, index * 500);
+        });
+        
+        alert(`Gerando PDFs para ${clientes.length} cliente(s). Os arquivos serão baixados em sequência.`);
+    }
+    
+    function setupTabNavigation() {
+        const inputs = document.querySelectorAll('.nome-input, .valor-input');
+        const inputsArray = Array.from(inputs);
+        
+        inputsArray.forEach((input, idx) => {
+            input.removeEventListener('keydown', tabHandler);
+            input.addEventListener('keydown', tabHandler);
+        });
+    }
+    
+    function tabHandler(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const allInputs = Array.from(document.querySelectorAll('.nome-input, .valor-input'));
+            const currentIndex = allInputs.indexOf(e.target);
+            const nextIndex = (currentIndex + 1) % allInputs.length;
+            allInputs[nextIndex].focus();
+            allInputs[nextIndex].select();
+        }
+    }
+    
     function renderMesesBar() {
         const container = document.getElementById('mesesContainer');
         if (!container) return;
@@ -947,12 +1095,13 @@
             
             html += `<td style="text-align:center; background:#fef9e3;"><span class="soma-linha" id="soma-cliente-${cliente.id}">${formatMoney(somaCliente)}</span></td>`;
             html += `<td class="acoes-col"><button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button></td>`;
-            html += '</tr>';
+            html += '</table>';
         }
         tbody.innerHTML = html;
         
         if (editMode) {
             attachEventListeners();
+            setupTabNavigation();
         }
     }
     
@@ -1025,7 +1174,7 @@
         carregarTema();
         const dadosCarregados = carregarDadosSalvos();
         if (!dadosCarregados || clientes.length === 0) {
-            meses = ['Janeiro', 'Fevereiro', 'Março'];
+            meses = ['Março/2025', 'Abril/2025', 'Maio/2025'];
             clientes = [];
             nextClienteId = 1;
             
@@ -1050,7 +1199,7 @@
         
         renderizarTudo();
         
-        document.getElementById('btnAddMes')?.addEventListener('click', () => adicionarMes());
+        document.getElementById('btnAddMes')?.addEventListener('click', () => adicionarMesNaSequencia());
         document.getElementById('btnAddCliente')?.addEventListener('click', () => adicionarNovoCliente());
         document.getElementById('btnExportarCSV')?.addEventListener('click', () => exportarCSV());
         document.getElementById('btnImportarCSV')?.addEventListener('click', () => {
@@ -1066,6 +1215,8 @@
         });
         document.getElementById('btnToggleEditMode')?.addEventListener('click', () => toggleEditMode());
         document.getElementById('btnToggleTheme')?.addEventListener('click', () => toggleTema());
+        document.getElementById('btnPDFGeral')?.addEventListener('click', () => gerarPDFGeral());
+        document.getElementById('btnPDFIndividual')?.addEventListener('click', () => gerarPDFIndividual());
     }
     
     init();
