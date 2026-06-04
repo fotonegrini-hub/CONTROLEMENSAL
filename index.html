@@ -11,7 +11,6 @@
             transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
         }
 
-        /* Temas */
         body {
             margin: 0;
             padding: 20px;
@@ -122,6 +121,10 @@
 
         body.tema-escuro .btn-editar:hover {
             background: #2563eb;
+        }
+
+        body.tema-escuro .drag-handle {
+            color: #94a3b8;
         }
 
         .app-container {
@@ -293,7 +296,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            min-width: 600px;
+            min-width: 650px;
         }
 
         .clientes-table th {
@@ -424,6 +427,7 @@
             font-size: 0.7rem;
             margin: 12px 0 0 8px;
             color: #475569;
+            flex-wrap: wrap;
         }
         .legenda span {
             display: inline-flex;
@@ -482,6 +486,29 @@
             transform: scale(1.05);
         }
         
+        .drag-handle {
+            cursor: grab;
+            font-size: 1.2rem;
+            display: inline-block;
+            user-select: none;
+            color: #94a3b8;
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        .numero-col {
+            text-align: center;
+            font-weight: 600;
+            width: 50px;
+            background-color: #f8fafc;
+        }
+        
+        body.tema-escuro .numero-col {
+            background-color: #0f172a;
+        }
+        
         .add-cliente-btn {
             background: #10b981;
             border: none;
@@ -499,6 +526,34 @@
         .acoes-col {
             text-align: center;
             white-space: nowrap;
+        }
+        
+        .pdf-range-selector {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 40px;
+            margin-left: 10px;
+        }
+        
+        .pdf-range-selector input {
+            width: 50px;
+            padding: 4px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+        
+        body.tema-escuro .pdf-range-selector {
+            background: #334155;
+        }
+        
+        body.tema-escuro .pdf-range-selector input {
+            background: #1e293b;
+            color: white;
+            border-color: #475569;
         }
         
         .footer-fixo {
@@ -532,12 +587,18 @@
             text-decoration: underline;
         }
         
+        .dragging {
+            opacity: 0.5;
+            background: #e2e8f0;
+        }
+        
         @media (max-width: 700px) {
             .clientes-table th, .clientes-table td {
                 padding: 8px 4px;
             }
             .valor-input { width: 85px; }
             .footer-fixo { font-size: 0.75rem; }
+            .numero-col { width: 40px; }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -552,10 +613,16 @@
     <div class="top-actions">
         <button class="btn-csv" id="btnExportarCSV">📥 Exportar CSV</button>
         <button class="btn-csv import" id="btnImportarCSV">📤 Importar CSV</button>
-        <button class="btn-csv btn-pdf" id="btnPDFGeral">📄 PDF Geral</button>
+        <div class="pdf-range-selector">
+            <span>📄 PDF:</span>
+            <input type="number" id="pdfInicio" min="1" placeholder="Início">
+            <span>à</span>
+            <input type="number" id="pdfFim" min="1" placeholder="Fim">
+            <button class="btn-csv btn-pdf" id="btnPDFGeral" style="padding: 4px 12px;">Gerar</button>
+        </div>
         <button class="btn-csv btn-pdf" id="btnPDFIndividual">👤 PDF Individual</button>
-        <button class="btn-csv btn-theme" id="btnToggleTheme">🌓 Tema Escuro/Claro</button>
-        <button class="btn-csv btn-edit-mode" id="btnToggleEditMode">✏️ Modo Edição: ATIVADO</button>
+        <button class="btn-csv btn-theme" id="btnToggleTheme">🌓 Tema</button>
+        <button class="btn-csv btn-edit-mode" id="btnToggleEditMode">✏️ Edição: ATIVADO</button>
     </div>
 
     <div class="meses-toolbar">
@@ -566,16 +633,17 @@
     <div class="table-wrapper">
         <table class="clientes-table" id="clientesTable">
             <thead id="tableHeader"></thead>
-            <tbody id="tableBody"></tbody>
+            <tbody id="tableBody" class="sortable-body"></tbody>
         </table>
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 10px;">
         <button class="add-cliente-btn" id="btnAddCliente">➕ Adicionar Cliente</button>
         <div class="legenda">
-            <span>🔔 <span class="badge-alerta"></span> 3º mês ou mais: cor de alerta (destaque)</span>
-            <span>💡 Campo vazio = considerado PAGO</span>
-            <span>💰 Campo com valor = DEVENDO</span>
+            <span>🔔 <span class="badge-alerta"></span> 3º mês ou mais: alerta</span>
+            <span>💡 Vazio = PAGO</span>
+            <span>💰 Valor = DEVENDO</span>
             <span>↹ TAB navega | ↵ ENTER salva</span>
+            <span>⋮⋮ Arraste para reorganizar</span>
         </div>
     </div>
 
@@ -595,6 +663,7 @@
     let nextClienteId = 1;
     let editMode = true;
     let temaAtual = 'claro';
+    let dragSourceRow = null;
     
     function toggleTema() {
         const body = document.body;
@@ -832,11 +901,12 @@
         }
         
         let csvRows = [];
-        let headers = ['Nome do Cliente', ...meses];
+        let headers = ['N°', 'Nome do Cliente', ...meses];
         csvRows.push(headers.join(','));
         
-        for (let cliente of clientes) {
-            let row = [cliente.nome];
+        for (let idx = 0; idx < clientes.length; idx++) {
+            const cliente = clientes[idx];
+            let row = [idx + 1, cliente.nome];
             for (let i = 0; i < meses.length; i++) {
                 let valor = cliente.valores[i];
                 if (valor !== null && !isNaN(valor) && valor > 0) {
@@ -872,7 +942,7 @@
                 }
                 
                 const headers = lines[0].split(',').map(h => h.trim());
-                const novosMeses = headers.slice(1);
+                let novosMeses = headers.slice(2);
                 
                 if (novosMeses.length === 0) {
                     alert('Nenhum mês encontrado no CSV');
@@ -885,11 +955,11 @@
                 for (let i = 1; i < lines.length; i++) {
                     if (lines[i].trim() === '') continue;
                     const cols = lines[i].split(',');
-                    const nome = cols[0]?.trim() || 'Cliente';
+                    const nome = cols[1]?.trim() || 'Cliente';
                     const valores = {};
                     
                     for (let j = 0; j < novosMeses.length; j++) {
-                        let valStr = cols[j+1]?.trim();
+                        let valStr = cols[j+2]?.trim();
                         if (valStr && valStr !== '') {
                             let num = parseFloat(valStr.replace(',', '.'));
                             valores[j] = (isNaN(num) ? null : (num > 0 ? num : null));
@@ -925,24 +995,49 @@
         reader.readAsText(file, 'UTF-8');
     }
     
-    function gerarPDFGeral() {
+    function gerarPDFGeralComIntervalo() {
+        const inicioInput = document.getElementById('pdfInicio');
+        const fimInput = document.getElementById('pdfFim');
+        let inicio = parseInt(inicioInput.value);
+        let fim = parseInt(fimInput.value);
+        
+        if (isNaN(inicio)) inicio = 1;
+        if (isNaN(fim)) fim = clientes.length;
+        
+        if (inicio < 1) inicio = 1;
+        if (fim > clientes.length) fim = clientes.length;
+        if (inicio > fim) {
+            alert('Intervalo inválido. O número inicial deve ser menor ou igual ao final.');
+            return;
+        }
+        
+        const clientesFiltrados = clientes.slice(inicio - 1, fim);
+        
+        if (clientesFiltrados.length === 0) {
+            alert('Nenhum cliente no intervalo selecionado');
+            return;
+        }
+        
         const element = document.createElement('div');
         element.innerHTML = `
             <div style="padding: 20px; font-family: Arial, sans-serif;">
                 <h1 style="text-align: center; color: #1e293b;">DN Controle Débito - Relatório Geral</h1>
                 <p style="text-align: center; color: #64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                <p style="text-align: center; color: #64748b;">Clientes selecionados: ${inicio} à ${fim} (Total: ${clientesFiltrados.length})</p>
                 <hr/>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <thead>
                         <tr style="background-color: #f1f5f9;">
+                            <th style="border: 1px solid #cbd5e1; padding: 8px;">N°</th>
                             <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Cliente</th>
                             ${meses.map(m => `<th style="border: 1px solid #cbd5e1; padding: 8px;">${m}</th>`).join('')}
                             <th style="border: 1px solid #cbd5e1; padding: 8px;">Total Devendo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${clientes.map(cliente => {
+                        ${clientesFiltrados.map((cliente, idx) => {
                             let row = `<tr>
+                                <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${inicio + idx}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>${cliente.nome}</strong></td>`;
                             for (let i = 0; i < meses.length; i++) {
                                 let valor = cliente.valores[i];
@@ -956,8 +1051,8 @@
                     </tbody>
                     <tfoot>
                         <tr style="background-color: #1e293b; color: white;">
-                            <td colspan="${meses.length + 1}" style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;"><strong>TOTAL GERAL:</strong></td>
-                            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(calcularTotalGeral())}</strong></td>
+                            <td colspan="${meses.length + 2}" style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;"><strong>TOTAL GERAL:</strong></td>
+                            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(clientesFiltrados.reduce((sum, c) => sum + calcularSomaCliente(c), 0))}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -970,7 +1065,7 @@
         
         const opt = {
             margin: [0.5, 0.5, 0.5, 0.5],
-            filename: `relatorio_geral_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`,
+            filename: `relatorio_geral_${inicio}_a_${fim}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, letterRendering: true },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
@@ -1027,7 +1122,7 @@
                                         <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><strong>${formatMoney(calcularSomaCliente(cliente))}</strong></td>
                                     </tr>
                                 </tfoot>
-                            <table>
+                            </table>
                         ` : '<p style="color: green;">✅ Este cliente não possui débitos pendentes!</p>'}
                     </div>
                     <hr/>
@@ -1052,9 +1147,57 @@
         alert(`Gerando PDFs para ${clientes.length} cliente(s). Os arquivos serão baixados em sequência.`);
     }
     
+    function setupDragAndDrop() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(row => {
+            row.setAttribute('draggable', 'true');
+            row.removeEventListener('dragstart', dragStart);
+            row.removeEventListener('dragend', dragEnd);
+            row.removeEventListener('dragover', dragOver);
+            row.removeEventListener('drop', drop);
+            
+            row.addEventListener('dragstart', dragStart);
+            row.addEventListener('dragend', dragEnd);
+            row.addEventListener('dragover', dragOver);
+            row.addEventListener('drop', drop);
+        });
+    }
+    
+    function dragStart(e) {
+        dragSourceRow = this;
+        e.dataTransfer.effectAllowed = 'move';
+        this.classList.add('dragging');
+    }
+    
+    function dragEnd(e) {
+        this.classList.remove('dragging');
+        dragSourceRow = null;
+    }
+    
+    function dragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+    
+    function drop(e) {
+        e.preventDefault();
+        const targetRow = this;
+        
+        if (dragSourceRow && dragSourceRow !== targetRow) {
+            const sourceIndex = Array.from(dragSourceRow.parentNode.children).indexOf(dragSourceRow);
+            const targetIndex = Array.from(targetRow.parentNode.children).indexOf(targetRow);
+            
+            if (sourceIndex !== -1 && targetIndex !== -1) {
+                const [movedClient] = clientes.splice(sourceIndex, 1);
+                clientes.splice(targetIndex, 0, movedClient);
+                salvarAutomatico();
+                renderizarTudo();
+            }
+        }
+    }
+    
     function setupEnterNavigation() {
         const inputs = document.querySelectorAll('.nome-input, .valor-input');
-        
         inputs.forEach((input) => {
             input.removeEventListener('keypress', enterHandler);
             input.addEventListener('keypress', enterHandler);
@@ -1131,13 +1274,15 @@
         const thead = document.getElementById('tableHeader');
         if (!thead) return;
         let html = '<tr>';
-        html += '<th style="min-width:150px">Cliente (nome editável)</th>';
+        html += '<th style="width: 50px;">N°</th>';
+        html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
             let alertaClasse = (i >= 2) ? ' style="background:#ffedd5;"' : '';
             html += `<th${alertaClasse}>📆 ${meses[i]}</th>`;
         }
-        html += '<th>💵 Soma da linha (devendo)</th>';
+        html += '<th>💵 Soma da linha</th>';
         html += '<th>⚙️ Ações</th>';
+        html += '<th style="width: 40px;">⋮⋮</th>';
         html += '</tr>';
         thead.innerHTML = html;
     }
@@ -1146,21 +1291,22 @@
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
         if (clientes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 3) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td></tr>';
             return;
         }
         
         let html = '';
-        for (let idxCliente = 0; idxCliente < clientes.length; idxCliente++) {
-            const cliente = clientes[idxCliente];
+        for (let idx = 0; idx < clientes.length; idx++) {
+            const cliente = clientes[idx];
             const somaCliente = calcularSomaCliente(cliente);
-            html += `<tr data-cliente-id="${cliente.id}">`;
+            html += `<tr data-cliente-id="${cliente.id}" draggable="true">`;
+            html += `<td class="numero-col">${idx + 1}</td>`;
             
             html += `<td class="cliente-nome">`;
             if (editMode) {
                 html += `<input type="text" class="nome-input" data-cliente-id="${cliente.id}" value="${escapeHtml(cliente.nome)}" placeholder="Nome do cliente">`;
             } else {
-                html += `<div class="nome-display" data-cliente-id="${cliente.id}" style="cursor:default;">${escapeHtml(cliente.nome)}</div>`;
+                html += `<div class="nome-display">${escapeHtml(cliente.nome)}</div>`;
             }
             html += `</td>`;
             
@@ -1182,8 +1328,9 @@
             html += `<td class="acoes-col">
                         <button class="btn-editar" data-cliente-id="${cliente.id}" title="Editar cliente">✏️</button>
                         <button class="remove-cliente small-icon" data-cliente-id="${cliente.id}" title="Remover cliente">✖️</button>
-                     </td>`;
-            html += '</tr>';
+                      </td>`;
+            html += `<td style="text-align:center;"><span class="drag-handle" title="Arraste para reorganizar">⋮⋮</span></td>`;
+            html += `</tr>`;
         }
         tbody.innerHTML = html;
         
@@ -1202,6 +1349,18 @@
             btn.removeEventListener('click', removeClienteHandler);
             btn.addEventListener('click', removeClienteHandler);
         });
+        
+        setupDragAndDrop();
+        
+        const maxNumero = clientes.length;
+        const inicioInput = document.getElementById('pdfInicio');
+        const fimInput = document.getElementById('pdfFim');
+        if (inicioInput) inicioInput.max = maxNumero;
+        if (fimInput) fimInput.max = maxNumero;
+        if (maxNumero > 0) {
+            if (!inicioInput.value) inicioInput.value = 1;
+            if (!fimInput.value) fimInput.value = maxNumero;
+        }
     }
     
     function attachEventListeners() {
@@ -1260,7 +1419,7 @@
         editMode = !editMode;
         const btn = document.getElementById('btnToggleEditMode');
         if (btn) {
-            btn.innerHTML = editMode ? '✏️ Modo Edição: ATIVADO' : '👁️ Modo Edição: DESATIVADO';
+            btn.innerHTML = editMode ? '✏️ Edição: ATIVADO' : '👁️ Edição: DESATIVADO';
             btn.style.background = editMode ? '#8b5cf6' : '#64748b';
         }
         renderizarTudo();
@@ -1318,7 +1477,7 @@
         });
         document.getElementById('btnToggleEditMode')?.addEventListener('click', () => toggleEditMode());
         document.getElementById('btnToggleTheme')?.addEventListener('click', () => toggleTema());
-        document.getElementById('btnPDFGeral')?.addEventListener('click', () => gerarPDFGeral());
+        document.getElementById('btnPDFGeral')?.addEventListener('click', () => gerarPDFGeralComIntervalo());
         document.getElementById('btnPDFIndividual')?.addEventListener('click', () => gerarPDFIndividual());
     }
     
