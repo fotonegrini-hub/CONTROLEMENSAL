@@ -138,6 +138,26 @@
             border-color: #475569;
         }
 
+        body.tema-escuro .selecao-checkbox {
+            accent-color: #3b82f6;
+        }
+
+        body.tema-escuro .btn-mover-lote {
+            background: #8b5cf6;
+        }
+
+        body.tema-escuro .btn-mover-lote:hover {
+            background: #7c3aed;
+        }
+
+        body.tema-escuro .btn-selecionar-todos {
+            background: #3b82f6;
+        }
+
+        body.tema-escuro .btn-selecionar-todos:hover {
+            background: #2563eb;
+        }
+
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -226,6 +246,22 @@
 
         .btn-pdf {
             background: #ef4444;
+        }
+
+        .btn-mover-lote {
+            background: #8b5cf6;
+        }
+
+        .btn-mover-lote:hover {
+            background: #7c3aed;
+        }
+
+        .btn-selecionar-todos {
+            background: #3b82f6;
+        }
+
+        .btn-selecionar-todos:hover {
+            background: #2563eb;
         }
 
         .buscador-container {
@@ -743,7 +779,45 @@
         .linha-oculta {
             display: none !important;
         }
-        
+
+        .selecao-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #8b5cf6;
+        }
+
+        .selecionado {
+            background-color: #ede9fe !important;
+        }
+
+        body.tema-escuro .selecionado {
+            background-color: #2e1065 !important;
+        }
+
+        .ferramentas-lote {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .ferramentas-lote .btn-csv {
+            font-size: 0.8rem;
+            padding: 6px 16px;
+        }
+
+        .info-selecionados {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        body.tema-escuro .info-selecionados {
+            color: #94a3b8;
+        }
+
         @media (max-width: 700px) {
             .clientes-table th, .clientes-table td {
                 padding: 8px 4px;
@@ -807,6 +881,14 @@
         </div>
     </div>
 
+    <!-- Ferramentas de Seleção em Lote -->
+    <div class="ferramentas-lote">
+        <button class="btn-csv btn-selecionar-todos" id="btnSelecionarTodos">☑ Selecionar Todos</button>
+        <button class="btn-csv btn-selecionar-todos" id="btnDesmarcarTodos">☐ Desmarcar Todos</button>
+        <button class="btn-csv btn-mover-lote" id="btnMoverLote">↕ Mover Selecionados</button>
+        <span class="info-selecionados" id="infoSelecionados">0 clientes selecionados</span>
+    </div>
+
     <div class="total-geral-footer">
         <span>💰 TOTAL GERAL (SOMA DE TODOS OS DÉBITOS) </span>
         <span class="total-valor" id="totalGeralValor">R$ 0,00</span>
@@ -825,6 +907,7 @@
     let temaAtual = 'claro';
     let dragSourceRow = null;
     let termoBusca = '';
+    let clientesSelecionados = new Set();
     
     function toggleTema() {
         const body = document.body;
@@ -1010,6 +1093,7 @@
     function removerCliente(clienteId) {
         if (confirm("Remover este cliente e todos os débitos?")) {
             clientes = clientes.filter(c => c.id != clienteId);
+            clientesSelecionados.delete(clienteId);
             salvarAutomatico();
             renderizarTudo();
         }
@@ -1057,6 +1141,56 @@
                 alert(`"${cliente.nome}" movido para posição ${novaPos}!`);
             }
         }
+    }
+    
+    function moverSelecionadosLote() {
+        const selecionados = clientes.filter(c => clientesSelecionados.has(c.id));
+        
+        if (selecionados.length === 0) {
+            alert('Nenhum cliente selecionado para mover.');
+            return;
+        }
+        
+        if (selecionados.length === clientes.length) {
+            alert('Todos os clientes estão selecionados. Não é possível mover todos para uma posição diferente.');
+            return;
+        }
+        
+        const posicaoAtual = clientes.findIndex(c => c.id === selecionados[0].id) + 1;
+        const maxPosicao = clientes.length - selecionados.length + 1;
+        
+        const novaPosicaoStr = prompt(
+            `Mover ${selecionados.length} cliente(s) selecionados.\n` +
+            `Posição atual do primeiro: ${posicaoAtual}\n` +
+            `Digite a nova posição (1 à ${maxPosicao}):`,
+            posicaoAtual
+        );
+        
+        if (novaPosicaoStr === null) return;
+        
+        let novaPos = parseInt(novaPosicaoStr);
+        if (isNaN(novaPos) || novaPos < 1 || novaPos > maxPosicao) {
+            alert(`Posição inválida! Digite um número entre 1 e ${maxPosicao}.`);
+            return;
+        }
+        
+        // Remove os selecionados mantendo a ordem
+        const idsSelecionados = new Set(selecionados.map(c => c.id));
+        const clientesRestantes = clientes.filter(c => !idsSelecionados.has(c.id));
+        
+        // Insere na nova posição
+        const indexDestino = Math.min(novaPos - 1, clientesRestantes.length);
+        clientes = [
+            ...clientesRestantes.slice(0, indexDestino),
+            ...selecionados,
+            ...clientesRestantes.slice(indexDestino)
+        ];
+        
+        clientesSelecionados.clear();
+        salvarAutomatico();
+        renderizarTudo();
+        atualizarInfoSelecionados();
+        alert(`${selecionados.length} cliente(s) movido(s) para posição ${novaPos}!`);
     }
     
     function adicionarMesNaSequencia() {
@@ -1212,6 +1346,7 @@
                     meses = novosMeses;
                     clientes = novosClientes;
                     nextClienteId = maxId + 1;
+                    clientesSelecionados.clear();
                     salvarAutomatico();
                     renderizarTudo();
                     alert(`Importado ${novosClientes.length} clientes e ${meses.length} meses com sucesso!`);
@@ -1540,6 +1675,55 @@
         }
     }
     
+    // Funções de Seleção em Lote
+    function toggleSelecao(clienteId) {
+        if (clientesSelecionados.has(clienteId)) {
+            clientesSelecionados.delete(clienteId);
+        } else {
+            clientesSelecionados.add(clienteId);
+        }
+        atualizarInfoSelecionados();
+        atualizarDestaquesSelecao();
+    }
+    
+    function selecionarTodos() {
+        clientesSelecionados.clear();
+        for (let cliente of clientes) {
+            clientesSelecionados.add(cliente.id);
+        }
+        atualizarInfoSelecionados();
+        atualizarDestaquesSelecao();
+    }
+    
+    function desmarcarTodos() {
+        clientesSelecionados.clear();
+        atualizarInfoSelecionados();
+        atualizarDestaquesSelecao();
+    }
+    
+    function atualizarInfoSelecionados() {
+        const info = document.getElementById('infoSelecionados');
+        if (info) {
+            info.textContent = `${clientesSelecionados.size} cliente(s) selecionado(s)`;
+        }
+    }
+    
+    function atualizarDestaquesSelecao() {
+        document.querySelectorAll('#tableBody tr').forEach(row => {
+            const checkbox = row.querySelector('.selecao-checkbox');
+            if (checkbox) {
+                const clienteId = parseInt(checkbox.value);
+                if (clientesSelecionados.has(clienteId)) {
+                    row.classList.add('selecionado');
+                    checkbox.checked = true;
+                } else {
+                    row.classList.remove('selecionado');
+                    checkbox.checked = false;
+                }
+            }
+        });
+    }
+    
     function renderMesesBar() {
         const container = document.getElementById('mesesContainer');
         if (!container) return;
@@ -1565,6 +1749,7 @@
         const thead = document.getElementById('tableHeader');
         if (!thead) return;
         let html = '<tr>';
+        html += '<th style="width: 40px;">☑</th>';
         html += '<th style="width: 70px;">N° (duplo clique)</th>';
         html += '<th style="min-width: 150px;">Cliente (nome editável)</th>';
         for (let i = 0; i < meses.length; i++) {
@@ -1581,7 +1766,7 @@
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
         if (clientes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 5) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td>' + '</tr>';
+            tbody.innerHTML = '<tr><td colspan="' + (meses.length + 6) + '" style="text-align:center; padding:40px;">✨ Nenhum cliente cadastrado. Clique em "Adicionar Cliente" ✨</td>' + '</tr>';
             return;
         }
         
@@ -1591,8 +1776,12 @@
             const somaCliente = calcularSomaCliente(cliente);
             const nomeLower = cliente.nome.toLowerCase();
             const estiloOculto = (termoBusca !== '' && !nomeLower.includes(termoBusca)) ? 'linha-oculta' : '';
+            const estaSelecionado = clientesSelecionados.has(cliente.id) ? 'selecionado' : '';
             
-            html += `<tr data-cliente-id="${cliente.id}" draggable="true" class="${estiloOculto}">`;
+            html += `<tr data-cliente-id="${cliente.id}" draggable="true" class="${estiloOculto} ${estaSelecionado}">`;
+            html += `<td style="text-align:center;">
+                        <input type="checkbox" class="selecao-checkbox" value="${cliente.id}" ${clientesSelecionados.has(cliente.id) ? 'checked' : ''}>
+                     </td>`;
             html += `<td class="numero-col" data-cliente-id="${cliente.id}" title="Duplo clique para reordenar"><span class="numero-atual">${idx + 1}</span></td>`;
             
             html += `<td class="cliente-nome">`;
@@ -1643,6 +1832,12 @@
             setupEnterNavigation();
         }
         
+        // Eventos de seleção
+        document.querySelectorAll('.selecao-checkbox').forEach(cb => {
+            cb.removeEventListener('change', checkboxChangeHandler);
+            cb.addEventListener('change', checkboxChangeHandler);
+        });
+        
         document.querySelectorAll('.btn-editar').forEach(btn => {
             btn.removeEventListener('click', editarHandler);
             btn.addEventListener('click', editarHandler);
@@ -1686,6 +1881,21 @@
         }
         
         aplicarFiltroBusca();
+        atualizarInfoSelecionados();
+    }
+    
+    function checkboxChangeHandler(e) {
+        const cb = e.target;
+        const clienteId = parseInt(cb.value);
+        if (!isNaN(clienteId)) {
+            if (cb.checked) {
+                clientesSelecionados.add(clienteId);
+            } else {
+                clientesSelecionados.delete(clienteId);
+            }
+            atualizarInfoSelecionados();
+            atualizarDestaquesSelecao();
+        }
     }
     
     function numeroDblClickHandler(e) {
@@ -1850,6 +2060,11 @@
         document.getElementById('btnToggleTheme')?.addEventListener('click', () => toggleTema());
         document.getElementById('btnPDFGeral')?.addEventListener('click', () => gerarPDFGeralComIntervalo());
         document.getElementById('btnPDFIndividual')?.addEventListener('click', () => gerarPDFIndividual());
+        
+        // Eventos de seleção em lote
+        document.getElementById('btnSelecionarTodos')?.addEventListener('click', selecionarTodos);
+        document.getElementById('btnDesmarcarTodos')?.addEventListener('click', desmarcarTodos);
+        document.getElementById('btnMoverLote')?.addEventListener('click', moverSelecionadosLote);
         
         const buscadorInput = document.getElementById('buscadorInput');
         const buscadorLimpar = document.getElementById('buscadorLimpar');
