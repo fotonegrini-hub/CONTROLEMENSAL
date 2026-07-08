@@ -158,6 +158,52 @@
             background: #2563eb;
         }
 
+        body.tema-escuro .btn-pagar-lote {
+            background: #22c55e;
+        }
+
+        body.tema-escuro .btn-pagar-lote:hover {
+            background: #16a34a;
+        }
+
+        body.tema-escuro .header-moderno {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        body.tema-escuro .header-moderno h1 {
+            color: #f1f5f9;
+        }
+
+        body.tema-escuro .header-moderno p {
+            color: #94a3b8;
+        }
+
+        body.tema-escuro .header-stats .stat-item {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        body.tema-escuro .header-stats .stat-item .stat-value {
+            color: #f1f5f9;
+        }
+
+        body.tema-escuro .header-stats .stat-item .stat-label {
+            color: #94a3b8;
+        }
+
+        body.tema-escuro .header-badge {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        body.tema-escuro .header-badge .badge-number {
+            color: #f1f5f9;
+        }
+
+        body.tema-escuro .header-badge .badge-label {
+            color: #94a3b8;
+        }
+
         .app-container {
             max-width: 1400px;
             width: 100%;
@@ -171,6 +217,164 @@
             flex-direction: column;
             min-height: calc(100vh - 40px);
         }
+
+        /* ===== HEADER MODERNO ===== */
+        .header-moderno {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .header-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            flex-shrink: 0;
+        }
+
+        .header-titulos {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-titulos h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .header-titulos h1 span {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-titulos p {
+            margin: 4px 0 0 0;
+            font-size: 0.9rem;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-titulos p .separator {
+            color: #94a3b8;
+        }
+
+        .header-badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-badge {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 6px 16px 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .header-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .header-badge .badge-icon {
+            font-size: 18px;
+        }
+
+        .header-badge .badge-number {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+
+        .header-badge .badge-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-stats .stat-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 16px;
+            text-align: center;
+            min-width: 80px;
+            transition: all 0.2s;
+        }
+
+        .header-stats .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .header-stats .stat-item .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: block;
+        }
+
+        .header-stats .stat-item .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .header-stats .stat-item.stat-divida .stat-value {
+            color: #dc2626;
+        }
+
+        .header-stats .stat-item.stat-pago .stat-value {
+            color: #16a34a;
+        }
+
+        .header-stats .stat-item.stat-clientes .stat-value {
+            color: #2563eb;
+        }
+
+        /* ===== FIM HEADER MODERNO ===== */
 
         .main-header {
             text-align: center;
@@ -262,6 +466,14 @@
 
         .btn-selecionar-todos:hover {
             background: #2563eb;
+        }
+
+        .btn-pagar-lote {
+            background: #22c55e;
+        }
+
+        .btn-pagar-lote:hover {
+            background: #16a34a;
         }
 
         .buscador-container {
@@ -827,16 +1039,99 @@
             .numero-col { width: 55px; }
             .buscador-input { width: 150px; }
             .circulo-verde, .circulo-laranja { width: 20px; height: 20px; font-size: 0.6rem; }
+            
+            .header-moderno {
+                padding: 16px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-left {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .header-titulos h1 {
+                font-size: 1.4rem;
+            }
+            .header-badges {
+                justify-content: center;
+            }
+            .header-stats {
+                justify-content: center;
+            }
+            .header-stats .stat-item {
+                min-width: 60px;
+                padding: 6px 12px;
+            }
+            .header-stats .stat-item .stat-value {
+                font-size: 1rem;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body class="tema-claro">
 <div class="app-container">
-    <div class="main-header">
-        <h1>📊 DN Controle Débito</h1>
-        <p>Gestão de Clientes | Controle Financeiro Mensal</p>
+    <!-- ===== HEADER MODERNO ===== -->
+    <div class="header-moderno">
+        <div class="header-left">
+            <div class="header-icon">📊</div>
+            <div class="header-titulos">
+                <h1>DN <span>Controle Débito</span></h1>
+                <p>
+                    <span>📋 Gestão de Clientes</span>
+                    <span class="separator">•</span>
+                    <span>💰 Controle Financeiro Mensal</span>
+                    <span class="separator">•</span>
+                    <span>🔄 Atualizado em tempo real</span>
+                </p>
+            </div>
+        </div>
+        <div class="header-badges">
+            <div class="header-badge">
+                <span class="badge-icon">📅</span>
+                <span>
+                    <span class="badge-number" id="headerTotalMeses">0</span>
+                    <span class="badge-label">meses</span>
+                </span>
+            </div>
+            <div class="header-badge">
+                <span class="badge-icon">👥</span>
+                <span>
+                    <span class="badge-number" id="headerTotalClientes">0</span>
+                    <span class="badge-label">clientes</span>
+                </span>
+            </div>
+            <div class="header-badge">
+                <span class="badge-icon">💰</span>
+                <span>
+                    <span class="badge-number" id="headerTotalDivida">R$ 0,00</span>
+                    <span class="badge-label">dívida total</span>
+                </span>
+            </div>
+        </div>
     </div>
+
+    <!-- Stats rápidos (ocultos em mobile, integrados acima) -->
+    <div class="header-stats" style="display: none;" id="headerStatsContainer">
+        <div class="stat-item stat-divida">
+            <span class="stat-value" id="statDivida">R$ 0,00</span>
+            <span class="stat-label">💰 Dívida Total</span>
+        </div>
+        <div class="stat-item stat-pago">
+            <span class="stat-value" id="statPago">0</span>
+            <span class="stat-label">✅ Pagos</span>
+        </div>
+        <div class="stat-item stat-clientes">
+            <span class="stat-value" id="statClientes">0</span>
+            <span class="stat-label">👥 Clientes</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="statMeses">0</span>
+            <span class="stat-label">📅 Meses</span>
+        </div>
+    </div>
+    <!-- ===== FIM HEADER MODERNO ===== -->
     
     <div class="top-actions">
         <div class="buscador-container">
@@ -886,6 +1181,7 @@
         <button class="btn-csv btn-selecionar-todos" id="btnSelecionarTodos">☑ Selecionar Todos</button>
         <button class="btn-csv btn-selecionar-todos" id="btnDesmarcarTodos">☐ Desmarcar Todos</button>
         <button class="btn-csv btn-mover-lote" id="btnMoverLote">↕ Mover Selecionados</button>
+        <button class="btn-csv btn-pagar-lote" id="btnPagarLote">💰 Pagar Selecionados</button>
         <span class="info-selecionados" id="infoSelecionados">0 clientes selecionados</span>
     </div>
 
@@ -1031,6 +1327,24 @@
         const total = calcularTotalGeral();
         const totalEl = document.getElementById('totalGeralValor');
         if (totalEl) totalEl.innerText = formatMoney(total);
+        
+        // Atualizar header badges
+        const headerTotalDivida = document.getElementById('headerTotalDivida');
+        if (headerTotalDivida) headerTotalDivida.innerText = formatMoney(total);
+    }
+    
+    function atualizarHeaderInfo() {
+        const totalMeses = document.getElementById('headerTotalMeses');
+        const totalClientes = document.getElementById('headerTotalClientes');
+        
+        if (totalMeses) totalMeses.textContent = meses.length;
+        if (totalClientes) totalClientes.textContent = clientes.length;
+        
+        // Stats ocultos (mantidos para compatibilidade)
+        const statClientes = document.getElementById('statClientes');
+        const statMeses = document.getElementById('statMeses');
+        if (statClientes) statClientes.textContent = clientes.length;
+        if (statMeses) statMeses.textContent = meses.length;
     }
     
     function atualizarSomaLinhaUI(clienteId) {
@@ -1191,6 +1505,34 @@
         renderizarTudo();
         atualizarInfoSelecionados();
         alert(`${selecionados.length} cliente(s) movido(s) para posição ${novaPos}!`);
+    }
+    
+    function pagarSelecionadosLote() {
+        const selecionados = clientes.filter(c => clientesSelecionados.has(c.id));
+        
+        if (selecionados.length === 0) {
+            alert('Nenhum cliente selecionado para marcar como pago.');
+            return;
+        }
+        
+        const nomesClientes = selecionados.map(c => c.nome).join(', ');
+        if (!confirm(`Marcar TODOS os débitos dos seguintes clientes como PAGOS?\n\n${nomesClientes}\n\nEsta ação não pode ser desfeita!`)) {
+            return;
+        }
+        
+        // Marcar todos os valores como null (pago) para cada cliente selecionado
+        for (let cliente of selecionados) {
+            for (let i = 0; i < meses.length; i++) {
+                cliente.valores[i] = null;
+            }
+        }
+        
+        // Limpar seleção após pagar
+        clientesSelecionados.clear();
+        salvarAutomatico();
+        renderizarTudo();
+        atualizarInfoSelecionados();
+        alert(`✅ ${selecionados.length} cliente(s) marcado(s) como PAGO com sucesso!`);
     }
     
     function adicionarMesNaSequencia() {
@@ -1882,6 +2224,7 @@
         
         aplicarFiltroBusca();
         atualizarInfoSelecionados();
+        atualizarHeaderInfo();
     }
     
     function checkboxChangeHandler(e) {
@@ -2001,6 +2344,7 @@
         renderHeader();
         renderBody();
         atualizarTotalGeralUI();
+        atualizarHeaderInfo();
     }
     
     function init() {
@@ -2065,6 +2409,7 @@
         document.getElementById('btnSelecionarTodos')?.addEventListener('click', selecionarTodos);
         document.getElementById('btnDesmarcarTodos')?.addEventListener('click', desmarcarTodos);
         document.getElementById('btnMoverLote')?.addEventListener('click', moverSelecionadosLote);
+        document.getElementById('btnPagarLote')?.addEventListener('click', pagarSelecionadosLote);
         
         const buscadorInput = document.getElementById('buscadorInput');
         const buscadorLimpar = document.getElementById('buscadorLimpar');
