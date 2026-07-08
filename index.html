@@ -166,6 +166,14 @@
             background: #16a34a;
         }
 
+        body.tema-escuro .btn-selecionar-intervalo {
+            background: #8b5cf6;
+        }
+
+        body.tema-escuro .btn-selecionar-intervalo:hover {
+            background: #7c3aed;
+        }
+
         body.tema-escuro .header-moderno {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         }
@@ -202,6 +210,26 @@
 
         body.tema-escuro .header-badge .badge-label {
             color: #94a3b8;
+        }
+
+        body.tema-escuro .selecao-intervalo-container {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        body.tema-escuro .selecao-intervalo-container input {
+            background: #334155;
+            color: white;
+            border-color: #475569;
+        }
+
+        body.tema-escuro .selecao-intervalo-container .intervalo-info {
+            color: #94a3b8;
+        }
+
+        body.tema-escuro .selecao-intervalo-container .clientes-preview {
+            background: #1e293b;
+            border-color: #334155;
         }
 
         .app-container {
@@ -474,6 +502,14 @@
 
         .btn-pagar-lote:hover {
             background: #16a34a;
+        }
+
+        .btn-selecionar-intervalo {
+            background: #8b5cf6;
+        }
+
+        .btn-selecionar-intervalo:hover {
+            background: #7c3aed;
         }
 
         .buscador-container {
@@ -1030,6 +1066,126 @@
             color: #94a3b8;
         }
 
+        /* ===== SELEÇÃO POR INTERVALO ===== */
+        .selecao-intervalo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8fafc;
+            padding: 8px 20px;
+            border-radius: 60px;
+            border: 1px solid #e2e8f0;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .selecao-intervalo-container .intervalo-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .selecao-intervalo-container .intervalo-label .label-icon {
+            font-size: 1.1rem;
+        }
+
+        .selecao-intervalo-container input[type="number"] {
+            width: 60px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+            font-size: 0.85rem;
+            background: white;
+            transition: 0.1s;
+        }
+
+        .selecao-intervalo-container input[type="number"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .selecao-intervalo-container .intervalo-separador {
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        .selecao-intervalo-container .btn-selecionar-intervalo {
+            background: #8b5cf6;
+            border: none;
+            color: white;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .selecao-intervalo-container .btn-selecionar-intervalo:hover {
+            background: #7c3aed;
+            transform: scale(0.97);
+        }
+
+        .selecao-intervalo-container .intervalo-info {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .selecao-intervalo-container .clientes-preview {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 300px;
+            max-height: 32px;
+            overflow: hidden;
+            background: #f1f5f9;
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .selecao-intervalo-container .clientes-preview .preview-item {
+            font-size: 0.7rem;
+            background: #8b5cf6;
+            color: white;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .selecao-intervalo-container .clientes-preview .preview-more {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .selecao-intervalo-container .btn-limpar-intervalo {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+
+        .selecao-intervalo-container .btn-limpar-intervalo:hover {
+            background: #dc2626;
+            transform: scale(0.97);
+        }
+
         @media (max-width: 700px) {
             .clientes-table th, .clientes-table td {
                 padding: 8px 4px;
@@ -1065,6 +1221,17 @@
             }
             .header-stats .stat-item .stat-value {
                 font-size: 1rem;
+            }
+            
+            .selecao-intervalo-container {
+                padding: 8px 12px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .selecao-intervalo-container .clientes-preview {
+                max-width: 100%;
+                max-height: none;
+                padding: 4px 10px;
             }
         }
     </style>
@@ -1184,6 +1351,21 @@
         <button class="btn-csv btn-pagar-lote" id="btnPagarLote">💰 Pagar Selecionados</button>
         <span class="info-selecionados" id="infoSelecionados">0 clientes selecionados</span>
     </div>
+
+    <!-- ===== SELEÇÃO POR INTERVALO ===== -->
+    <div class="selecao-intervalo-container" id="selecaoIntervaloContainer">
+        <span class="intervalo-label">
+            <span class="label-icon">🎯</span> Selecionar N°:
+        </span>
+        <input type="number" id="intervaloInicio" min="1" placeholder="Início" value="1">
+        <span class="intervalo-separador">→</span>
+        <input type="number" id="intervaloFim" min="1" placeholder="Fim">
+        <button class="btn-selecionar-intervalo" id="btnSelecionarIntervalo">✓ Selecionar</button>
+        <span class="intervalo-info" id="intervaloInfo">Selecione o intervalo</span>
+        <div class="clientes-preview" id="clientesPreview"></div>
+        <button class="btn-limpar-intervalo" id="btnLimparIntervalo">✖ Limpar</button>
+    </div>
+    <!-- ===== FIM SELEÇÃO POR INTERVALO ===== -->
 
     <div class="total-geral-footer">
         <span>💰 TOTAL GERAL (SOMA DE TODOS OS DÉBITOS) </span>
@@ -1328,7 +1510,6 @@
         const totalEl = document.getElementById('totalGeralValor');
         if (totalEl) totalEl.innerText = formatMoney(total);
         
-        // Atualizar header badges
         const headerTotalDivida = document.getElementById('headerTotalDivida');
         if (headerTotalDivida) headerTotalDivida.innerText = formatMoney(total);
     }
@@ -1340,7 +1521,6 @@
         if (totalMeses) totalMeses.textContent = meses.length;
         if (totalClientes) totalClientes.textContent = clientes.length;
         
-        // Stats ocultos (mantidos para compatibilidade)
         const statClientes = document.getElementById('statClientes');
         const statMeses = document.getElementById('statMeses');
         if (statClientes) statClientes.textContent = clientes.length;
@@ -1488,11 +1668,9 @@
             return;
         }
         
-        // Remove os selecionados mantendo a ordem
         const idsSelecionados = new Set(selecionados.map(c => c.id));
         const clientesRestantes = clientes.filter(c => !idsSelecionados.has(c.id));
         
-        // Insere na nova posição
         const indexDestino = Math.min(novaPos - 1, clientesRestantes.length);
         clientes = [
             ...clientesRestantes.slice(0, indexDestino),
@@ -1520,14 +1698,12 @@
             return;
         }
         
-        // Marcar todos os valores como null (pago) para cada cliente selecionado
         for (let cliente of selecionados) {
             for (let i = 0; i < meses.length; i++) {
                 cliente.valores[i] = null;
             }
         }
         
-        // Limpar seleção após pagar
         clientesSelecionados.clear();
         salvarAutomatico();
         renderizarTudo();
@@ -2017,7 +2193,6 @@
         }
     }
     
-    // Funções de Seleção em Lote
     function toggleSelecao(clienteId) {
         if (clientesSelecionados.has(clienteId)) {
             clientesSelecionados.delete(clienteId);
@@ -2026,6 +2201,7 @@
         }
         atualizarInfoSelecionados();
         atualizarDestaquesSelecao();
+        atualizarPreviewIntervalo();
     }
     
     function selecionarTodos() {
@@ -2035,12 +2211,14 @@
         }
         atualizarInfoSelecionados();
         atualizarDestaquesSelecao();
+        atualizarPreviewIntervalo();
     }
     
     function desmarcarTodos() {
         clientesSelecionados.clear();
         atualizarInfoSelecionados();
         atualizarDestaquesSelecao();
+        atualizarPreviewIntervalo();
     }
     
     function atualizarInfoSelecionados() {
@@ -2048,6 +2226,7 @@
         if (info) {
             info.textContent = `${clientesSelecionados.size} cliente(s) selecionado(s)`;
         }
+        atualizarPreviewIntervalo();
     }
     
     function atualizarDestaquesSelecao() {
@@ -2065,6 +2244,110 @@
             }
         });
     }
+    
+    // ===== FUNÇÕES DA SELEÇÃO POR INTERVALO =====
+    function selecionarPorIntervalo() {
+        const inicioInput = document.getElementById('intervaloInicio');
+        const fimInput = document.getElementById('intervaloFim');
+        const infoEl = document.getElementById('intervaloInfo');
+        
+        let inicio = parseInt(inicioInput.value);
+        let fim = parseInt(fimInput.value);
+        
+        if (isNaN(inicio) || inicio < 1) inicio = 1;
+        if (isNaN(fim) || fim > clientes.length) fim = clientes.length;
+        if (inicio < 1) inicio = 1;
+        if (fim > clientes.length) fim = clientes.length;
+        
+        if (inicio > fim) {
+            [inicio, fim] = [fim, inicio];
+            inicioInput.value = inicio;
+            fimInput.value = fim;
+        }
+        
+        if (inicio < 1 || fim > clientes.length || inicio > clientes.length) {
+            infoEl.textContent = `⚠️ Intervalo inválido (1 à ${clientes.length})`;
+            return;
+        }
+        
+        // Limpar seleções anteriores
+        clientesSelecionados.clear();
+        
+        // Selecionar os clientes no intervalo
+        for (let i = inicio - 1; i < fim; i++) {
+            if (i < clientes.length) {
+                clientesSelecionados.add(clientes[i].id);
+            }
+        }
+        
+        const qtdSelecionados = clientesSelecionados.size;
+        infoEl.textContent = `✅ ${qtdSelecionados} cliente(s) selecionado(s) (N° ${inicio} à ${fim})`;
+        
+        atualizarDestaquesSelecao();
+        atualizarInfoSelecionados();
+        atualizarPreviewIntervalo();
+        
+        if (qtdSelecionados > 0) {
+            const nomes = clientes.filter(c => clientesSelecionados.has(c.id)).map(c => c.nome);
+            mostrarPreviewNomes(nomes);
+        }
+    }
+    
+    function mostrarPreviewNomes(nomes) {
+        const preview = document.getElementById('clientesPreview');
+        if (!preview) return;
+        
+        if (nomes.length === 0) {
+            preview.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        const maxMostrar = 5;
+        const mostrar = nomes.slice(0, maxMostrar);
+        
+        mostrar.forEach(nome => {
+            html += `<span class="preview-item">${escapeHtml(nome)}</span>`;
+        });
+        
+        if (nomes.length > maxMostrar) {
+            html += `<span class="preview-more">+${nomes.length - maxMostrar} mais</span>`;
+        }
+        
+        preview.innerHTML = html;
+    }
+    
+    function atualizarPreviewIntervalo() {
+        const nomes = clientes.filter(c => clientesSelecionados.has(c.id)).map(c => c.nome);
+        mostrarPreviewNomes(nomes);
+        
+        const infoEl = document.getElementById('intervaloInfo');
+        if (clientesSelecionados.size > 0) {
+            infoEl.textContent = `${clientesSelecionados.size} cliente(s) selecionado(s)`;
+        } else {
+            infoEl.textContent = 'Selecione o intervalo';
+        }
+    }
+    
+    function limparIntervalo() {
+        document.getElementById('intervaloInicio').value = '1';
+        document.getElementById('intervaloFim').value = '';
+        document.getElementById('intervaloInfo').textContent = 'Selecione o intervalo';
+        document.getElementById('clientesPreview').innerHTML = '';
+    }
+    
+    function atualizarIntervaloMax() {
+        const max = clientes.length;
+        const inicioInput = document.getElementById('intervaloInicio');
+        const fimInput = document.getElementById('intervaloFim');
+        if (inicioInput) inicioInput.max = max;
+        if (fimInput) fimInput.max = max;
+        if (max > 0 && !fimInput.value) {
+            fimInput.value = max;
+        }
+    }
+    
+    // ===== FIM FUNÇÕES DA SELEÇÃO POR INTERVALO =====
     
     function renderMesesBar() {
         const container = document.getElementById('mesesContainer');
@@ -2174,7 +2457,6 @@
             setupEnterNavigation();
         }
         
-        // Eventos de seleção
         document.querySelectorAll('.selecao-checkbox').forEach(cb => {
             cb.removeEventListener('change', checkboxChangeHandler);
             cb.addEventListener('change', checkboxChangeHandler);
@@ -2225,6 +2507,8 @@
         aplicarFiltroBusca();
         atualizarInfoSelecionados();
         atualizarHeaderInfo();
+        atualizarIntervaloMax();
+        atualizarPreviewIntervalo();
     }
     
     function checkboxChangeHandler(e) {
@@ -2238,6 +2522,7 @@
             }
             atualizarInfoSelecionados();
             atualizarDestaquesSelecao();
+            atualizarPreviewIntervalo();
         }
     }
     
@@ -2345,6 +2630,8 @@
         renderBody();
         atualizarTotalGeralUI();
         atualizarHeaderInfo();
+        atualizarIntervaloMax();
+        atualizarPreviewIntervalo();
     }
     
     function init() {
@@ -2405,11 +2692,22 @@
         document.getElementById('btnPDFGeral')?.addEventListener('click', () => gerarPDFGeralComIntervalo());
         document.getElementById('btnPDFIndividual')?.addEventListener('click', () => gerarPDFIndividual());
         
-        // Eventos de seleção em lote
         document.getElementById('btnSelecionarTodos')?.addEventListener('click', selecionarTodos);
         document.getElementById('btnDesmarcarTodos')?.addEventListener('click', desmarcarTodos);
         document.getElementById('btnMoverLote')?.addEventListener('click', moverSelecionadosLote);
         document.getElementById('btnPagarLote')?.addEventListener('click', pagarSelecionadosLote);
+        
+        // Eventos da seleção por intervalo
+        document.getElementById('btnSelecionarIntervalo')?.addEventListener('click', selecionarPorIntervalo);
+        document.getElementById('btnLimparIntervalo')?.addEventListener('click', limparIntervalo);
+        
+        // Enter nos campos de intervalo
+        document.getElementById('intervaloInicio')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') selecionarPorIntervalo();
+        });
+        document.getElementById('intervaloFim')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') selecionarPorIntervalo();
+        });
         
         const buscadorInput = document.getElementById('buscadorInput');
         const buscadorLimpar = document.getElementById('buscadorLimpar');
